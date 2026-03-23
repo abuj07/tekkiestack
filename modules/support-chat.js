@@ -71,7 +71,7 @@ const TSASupport = (() => {
     // mailto fallback
     const body    = encodeURIComponent(`${message}\n\n---\nSent via TekkieStack v${window.TSA?.config?.version || '2.0.0'}`);
     const subj    = encodeURIComponent(subject || 'TekkieStack Support Request');
-    const mailto  = `mailto:hello@aperintel.com?subject=${subj}&body=${body}`;
+    const mailto  = `mailto:aperintel@gmail.com?subject=${subj}&body=${body}`;
     window.location.href = mailto;
     return { ok: true, method: 'mailto' };
   }
@@ -85,7 +85,7 @@ const TSASupport = (() => {
       <div style="max-width:800px;margin:0 auto;padding:30px 18px">
         <div style="text-align:center;margin-bottom:26px">
           <h2 style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--navy)">💬 Help & Support</h2>
-          <p style="font-size:14px;color:var(--muted);margin-top:5px;font-weight:500">We typically reply within 24 hours · hello@aperintel.com</p>
+          <p style="font-size:14px;color:var(--muted);margin-top:5px;font-weight:500">We typically reply within 24 hours</p>
         </div>
 
         <!-- Quick replies -->
@@ -131,7 +131,7 @@ const TSASupport = (() => {
               📧 Send Message
             </button>
             <p style="font-size:12px;color:var(--muted);text-align:center;font-weight:500">
-              Your message is sent to hello@aperintel.com. We aim to reply within 24 hours.
+              Your message goes to the Aperintel support team. We aim to reply within 24 hours.
               <br>No account needed · Your data stays on your device
             </p>
           </div>
@@ -143,7 +143,7 @@ const TSASupport = (() => {
           ${[
             ['I forgot my PIN', 'If you forgot your PIN, a parent or teacher can delete the profile from the profile picker screen (long-press on desktop or use the settings when available) and create a new one. Progress is saved in backups for up to 5 snapshots.'],
             ['Does TekkieStack work offline?', 'Yes! TekkieStack is built offline-first. Once you\'ve loaded it once, everything works without an internet connection — except the online AI Lab feature.'],
-            ['My progress disappeared', 'Progress is stored locally on your device. If you cleared your browser data, the progress may be gone. For the best reliability, we recommend keeping regular backups using the backup feature (Stage 12).'],
+            ['My progress disappeared', 'Progress is stored locally on your device. If you cleared your browser data, the progress may be gone. We recommend avoiding clearing browser data for sites you use regularly to preserve your learning progress.'],
             ['Can two children share a device?', 'Yes! TekkieStack supports up to 10 profiles per device. Each profile has its own PIN and separate progress.'],
           ].map(([q, a]) => `
             <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
@@ -152,7 +152,7 @@ const TSASupport = (() => {
             </div>
           `).join('')}
           <div style="text-align:center;padding-top:4px">
-            <a href="mailto:hello@aperintel.com" style="font-size:13px;color:var(--cyan);font-weight:700;text-decoration:none">📧 hello@aperintel.com</a>
+            <button class="btn btn-cy" style="font-size:13px;padding:8px 16px" onclick="document.getElementById('sMessage').focus()">📬 Send us a message above</button>
           </div>
         </div>
       </div>
@@ -208,7 +208,7 @@ const TSASupport = (() => {
         document.getElementById('sName').value    = '';
       }
     } catch(e) {
-      if (msgEl) { msgEl.innerHTML = '<span style="color:var(--coral);font-size:13px;font-weight:700">⚠ Could not send. Please email hello@aperintel.com directly.</span>'; }
+      if (msgEl) { msgEl.innerHTML = '<span style="color:var(--coral);font-size:13px;font-weight:700">⚠ Could not send. Please try again or check your internet connection.</span>'; }
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = '📧 Send Message'; }
     }
