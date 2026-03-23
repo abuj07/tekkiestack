@@ -334,7 +334,7 @@ function _initCookieBanner() {
 function _initFooter() {
   const yr  = new Date().getFullYear();
   const el  = document.getElementById('footerCopy');
-  if (el) el.textContent = `© ${yr} Aperintel Ltd. All rights reserved. TekkieStack is a product of Aperintel Ltd.`;
+  if (el) el.textContent = `© ${yr} Aperintel. All rights reserved. Tekkiestack is a product of Aperintel.`;
 }
 
 // ── Service worker registration ────────────────────────────────────────────
