@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TekkieStack — Test Runner</title>
+<style>
+  /* NOT linked from the main app — access via /tests/test-runner.html directly */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0F1F3D; color: #CDD9F0; min-height: 100vh; padding: 32px 24px; }
+  h1 { font-size: 28px; color: #00C9B1; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #6B7A99; margin-bottom: 28px; }
+  .run-btn { background: #00C9B1; color: #0F1F3D; border: none; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; margin-bottom: 24px; }
+  .run-btn:hover { background: #00A896; transform: translateY(-1px); }
+  .run-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .summary { background: #1A3260; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 24px; flex-wrap: wrap; }
+  .sum-item { text-align: center; }
+  .sum-num  { font-size: 32px; font-weight: 700; }
+  .sum-lbl  { font-size: 11px; color: #6B7A99; text-transform: uppercase; letter-spacing: 1px; }
+  .pass-num { color: #2EC4B6; }
+  .fail-num { color: #FF6B6B; }
+  .skip-num { color: #FFB347; }
+  #results { display: flex; flex-direction: column; gap: 6px; }
+  .test-row { background: #1A3260; border-radius: 8px; padding: 11px 16px; display: flex; align-items: flex-start; gap: 12px; }
+  .test-row.pass { border-left: 3px solid #2EC4B6; }
+  .test-row.fail { border-left: 3px solid #FF6B6B; }
+  .test-row.running { border-left: 3px solid #FFB347; }
+  .test-badge { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+  .badge-pass { background: rgba(46,196,182,.2); color: #2EC4B6; }
+  .badge-fail { background: rgba(255,107,107,.2); color: #FF6B6B; }
+  .badge-run  { background: rgba(255,179,71,.2); color: #FFB347; }
+  .test-name  { font-size: 13px; font-weight: 600; flex: 1; }
+  .test-detail { font-size: 11px; color: #6B7A99; margin-top: 4px; font-family: monospace; }
+  .section-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: #4A6A99; margin: 20px 0 8px; }
+  .dl-btn { background: #1A3260; color: #00C9B1; border: 1px solid #243A70; padding: 8px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+  .dl-btn:hover { background: #243A70; }
+  .timer { font-size: 12px; color: #6B7A99; margin-left: auto; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<h1>⚗️ TekkieStack Test Runner</h1>
+<p class="subtitle">Automated tests — all features · Not visible to public users</p>
+
+<button class="run-btn" id="runBtn" onclick="runAllTests()">▶ Run All Tests</button>
+
+<div class="summary" id="summary" style="display:none">
+  <div class="sum-item"><div class="sum-num pass-num" id="passCount">0</div><div class="sum-lbl">Passed</div></div>
+  <div class="sum-item"><div class="sum-num fail-num" id="failCount">0</div><div class="sum-lbl">Failed</div></div>
+  <div class="sum-item"><div class="sum-num skip-num" id="skipCount">0</div><div class="sum-lbl">Skipped</div></div>
+  <div class="sum-item"><div class="sum-num" style="color:#CDD9F0" id="timeCount">0ms</div><div class="sum-lbl">Time</div></div>
+</div>
+
+<div id="results"></div>
+<button class="dl-btn" id="dlBtn" style="display:none" onclick="downloadReport()">⬇ Download JSON Report</button>
+
+<script src="../assets/js/storage.js"></script>
+<script src="../tests/tests.js"></script>
+<script>
+let _results = [];
+let _passed = 0, _failed = 0, _skipped = 0;
+const startMs = Date.now();
+
+function _addRow(name, status, detail, ms) {
+  const div = document.createElement('div');
+  div.className = `test-row ${status}`;
+  div.innerHTML = `
+    <span class="test-badge badge-${status==='pass'?'pass':status==='fail'?'fail':'run'}">${status.toUpperCase()}</span>
+    <div style="flex:1">
+      <div class="test-name">${name}</div>
+      ${detail ? `<div class="test-detail">${detail}</div>` : ''}
+    </div>
+    ${ms !== undefined ? `<span class="timer">${ms}ms</span>` : ''}
+  `;
+  document.getElementById('results').appendChild(div);
+  document.getElementById('results').scrollTop = 999999;
+}
+
+function _sectionHead(label) {
+  const div = document.createElement('div');
+  div.className = 'section-head';
+  div.textContent = '── ' + label;
+  document.getElementById('results').appendChild(div);
+}
+
+async function runAllTests() {
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('summary').style.display = 'flex';
+  _results = []; _passed = 0; _failed = 0; _skipped = 0;
+  const t0 = Date.now();
+
+  const suites = window.TSA_TESTS || [];
+  for (const suite of suites) {
+    _sectionHead(suite.name);
+    for (const test of suite.tests) {
+      const t1 = Date.now();
+      try {
+        const result = await test.fn();
+        const ms = Date.now() - t1;
+        if (result && result.skip) {
+          _skipped++;
+          _addRow(test.name, 'running', result.reason || 'Skipped', ms);
+        } else if (result && result.pass) {
+          _passed++;
+          _addRow(test.name, 'pass', result.message || '', ms);
+        } else {
+          _failed++;
+          _addRow(test.name, 'fail', result?.message || 'Test returned falsy', ms);
+        }
+        _results.push({ suite: suite.name, name: test.name, status: result?.skip ? 'skip' : result?.pass ? 'pass' : 'fail', message: result?.message, ms });
+      } catch(e) {
+        const ms = Date.now() - t1;
+        _failed++;
+        _addRow(test.name, 'fail', 'Exception: ' + e.message, ms);
+        _results.push({ suite: suite.name, name: test.name, status: 'fail', message: 'Exception: ' + e.message, ms });
+      }
+      // Update counts
+      document.getElementById('passCount').textContent = _passed;
+      document.getElementById('failCount').textContent = _failed;
+      document.getElementById('skipCount').textContent = _skipped;
+      document.getElementById('timeCount').textContent = (Date.now()-t0) + 'ms';
+      // Breathe between tests
+      await new Promise(r => setTimeout(r, 10));
+    }
+  }
+
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('dlBtn').style.display = 'inline-block';
+}
+
+function downloadReport() {
+  const report = {
+    generated: new Date().toISOString(),
+    passed: _passed, failed: _failed, skipped: _skipped,
+    total: _results.length,
+    results: _results,
+  };
+  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `ts-test-report-${Date.now()}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
