@@ -1,91 +1,48 @@
-/**
- * TekkieStack 2.0 — Service Worker (v2)
- * Cache-first offline strategy. Cache version bumped on every deploy.
- * Author: Aperintel Ltd
- */
+TekkieStack Software License
+© 2026 Aperintel. All rights reserved. Tekkiestack is a product of Aperintel.
 
-const CACHE_VERSION = 'ts-v2';  // bump this string on every production deploy
-const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/assets/css/main.css',
-  '/assets/js/security.js',
-  '/assets/js/storage.js',
-  '/assets/js/session.js',
-  '/assets/js/xp.js',
-  '/assets/js/app.js',
-  '/assets/img/logo.png',
-  '/modules/code-editor.js',
-  '/modules/typing-trainer.js',
-  '/modules/ai-lab.js',
-  '/modules/support-chat.js',
-  '/modules/junior-phases.js',
-  '/modules/senior-phases.js',
-  '/modules/engagement.js',
-  // Google Fonts — cached on first fetch
-  'https://fonts.googleapis.com/css2?family=Fredoka+One&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap'
-];
+GRANT OF LICENSE
+Aperintel Ltd ("Licensor") grants you a limited, non-exclusive, non-transferable,
+revocable licence to use TekkieStack solely for personal, non-commercial, and
+educational purposes, subject to the conditions below.
 
-// ── Install: pre-cache shell ───────────────────────────────────────────────
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v2…');
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => {
-      return Promise.allSettled(
-        SHELL_ASSETS.map(url =>
-          cache.add(url).catch(err => console.warn('[SW] Could not cache:', url, err.message))
-        )
-      );
-    }).then(() => self.skipWaiting())
-  );
-});
+PERMITTED USES
+- Using TekkieStack to learn coding or to teach coding in a personal or classroom setting
+- Sharing the URL of the hosted TekkieStack application with others
+- Forking this repository for the purpose of submitting pull requests to the Licensor
 
-// ── Activate: clean old caches ────────────────────────────────────────────
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v2…');
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_VERSION)
-          .map(key => {
-            console.log('[SW] Removing old cache:', key);
-            return caches.delete(key);
-          })
-      )
-    ).then(() => self.clients.claim())
-  );
-});
+PROHIBITED USES — WITHOUT PRIOR WRITTEN PERMISSION FROM APERINTEL LTD
+- Commercial use of any kind, including but not limited to charging fees for access,
+  incorporating TekkieStack into a paid product or service, or using it as the basis
+  for a competing EdTech product
+- Redistribution of the source code, compiled code, or any substantial portion thereof,
+  whether modified or unmodified, under any name or branding
+- White-labelling, rebranding, or presenting TekkieStack as your own product
+- Hosting a public-facing copy of TekkieStack on a domain you operate, other than
+  the official https://tekkiestack.com (or domain operated by Aperintel Ltd)
+- Removing or obscuring copyright notices, attribution, or the Aperintel Ltd branding
+  within the application
 
-// ── Fetch: cache-first, fall back to network ──────────────────────────────
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+INTELLECTUAL PROPERTY
+All source code, design, curriculum content, lesson material, AI prompt engineering,
+branding, and associated documentation are the intellectual property of Aperintel Ltd.
+Users own the code projects they create within the platform. Aperintel Ltd makes no
+claim over learner-generated content.
 
-  const url = new URL(event.request.url);
-  const isSameOrigin = url.origin === self.location.origin;
-  const isGoogleFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
-  if (!isSameOrigin && !isGoogleFont) return;
+DISCLAIMER
+TEKKIESTACK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, APERINTEL LTD SHALL NOT BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING FROM
+USE OF THE SOFTWARE.
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_VERSION).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      });
-    })
-  );
-});
+GOVERNING LAW
+This licence is governed by the laws of England and Wales. Any disputes shall be
+subject to the exclusive jurisdiction of the courts of England and Wales.
 
-// ── Message: force update ─────────────────────────────────────────────────
-self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') self.skipWaiting();
-});
+CONTACT
+For licensing enquiries, white-label partnerships, or commercial use requests:
+legal@aperintel.com
+hello@aperintel.com
+
+Aperintel Ltd
+Registered in England and Wales

@@ -1,237 +1,146 @@
-/**
- * TekkieStack 2.0 — Typing Trainer Module
- * Full suite: on-screen keyboard, WPM tracking, 5 levels, progression gates.
- * Built in Stage 6.
- *
- * Author: Aperintel Ltd
- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TekkieStack — Test Runner</title>
+<style>
+  /* NOT linked from the main app — access via /tests/test-runner.html directly */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0F1F3D; color: #CDD9F0; min-height: 100vh; padding: 32px 24px; }
+  h1 { font-size: 28px; color: #00C9B1; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #6B7A99; margin-bottom: 28px; }
+  .run-btn { background: #00C9B1; color: #0F1F3D; border: none; padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; margin-bottom: 24px; }
+  .run-btn:hover { background: #00A896; transform: translateY(-1px); }
+  .run-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .summary { background: #1A3260; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 24px; flex-wrap: wrap; }
+  .sum-item { text-align: center; }
+  .sum-num  { font-size: 32px; font-weight: 700; }
+  .sum-lbl  { font-size: 11px; color: #6B7A99; text-transform: uppercase; letter-spacing: 1px; }
+  .pass-num { color: #2EC4B6; }
+  .fail-num { color: #FF6B6B; }
+  .skip-num { color: #FFB347; }
+  #results { display: flex; flex-direction: column; gap: 6px; }
+  .test-row { background: #1A3260; border-radius: 8px; padding: 11px 16px; display: flex; align-items: flex-start; gap: 12px; }
+  .test-row.pass { border-left: 3px solid #2EC4B6; }
+  .test-row.fail { border-left: 3px solid #FF6B6B; }
+  .test-row.running { border-left: 3px solid #FFB347; }
+  .test-badge { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+  .badge-pass { background: rgba(46,196,182,.2); color: #2EC4B6; }
+  .badge-fail { background: rgba(255,107,107,.2); color: #FF6B6B; }
+  .badge-run  { background: rgba(255,179,71,.2); color: #FFB347; }
+  .test-name  { font-size: 13px; font-weight: 600; flex: 1; }
+  .test-detail { font-size: 11px; color: #6B7A99; margin-top: 4px; font-family: monospace; }
+  .section-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: #4A6A99; margin: 20px 0 8px; }
+  .dl-btn { background: #1A3260; color: #00C9B1; border: 1px solid #243A70; padding: 8px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+  .dl-btn:hover { background: #243A70; }
+  .timer { font-size: 12px; color: #6B7A99; margin-left: auto; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<h1>⚗️ TekkieStack Test Runner</h1>
+<p class="subtitle">Automated tests — all features · Not visible to public users</p>
 
-const TSATyping = (() => {
+<button class="run-btn" id="runBtn" onclick="runAllTests()">▶ Run All Tests</button>
 
-  // ── Keyboard layout ──────────────────────────────────────────────────────
-  const KB_ROWS = [
-    ['`','1','2','3','4','5','6','7','8','9','0','-','=','⌫'],
-    ['Tab','q','w','e','r','t','y','u','i','o','p','[',']','\\'],
-    ['Caps','a','s','d','f','g','h','j','k','l',';',"'",'↵'],
-    ['Shift','z','x','c','v','b','n','m',',','.','/','Shift'],
-    ['Space'],
-  ];
-  const HOME_ROW = new Set(['a','s','d','f','j','k','l',';']);
-  const WIDE     = new Set(['Tab','Caps','Shift','⌫','↵','\\']);
+<div class="summary" id="summary" style="display:none">
+  <div class="sum-item"><div class="sum-num pass-num" id="passCount">0</div><div class="sum-lbl">Passed</div></div>
+  <div class="sum-item"><div class="sum-num fail-num" id="failCount">0</div><div class="sum-lbl">Failed</div></div>
+  <div class="sum-item"><div class="sum-num skip-num" id="skipCount">0</div><div class="sum-lbl">Skipped</div></div>
+  <div class="sum-item"><div class="sum-num" style="color:#CDD9F0" id="timeCount">0ms</div><div class="sum-lbl">Time</div></div>
+</div>
 
-  // ── Lesson pools ─────────────────────────────────────────────────────────
-  const LEVELS = {
-    home:  {
-      label: 'Home Row',
-      passages: ['asdf jkl; asdf jkl;','fdsa ;lkj fdsa ;lkj','asdfjkl; fdsajkl; asdf','jkl; asdf jkl; fdsa','afjk dsla fjdk slaf'],
-      gateWpm: 0, gateAcc: 0,
-    },
-    alpha: {
-      label: 'All Letters',
-      passages: ['the quick brown fox','jumps over lazy dog','pack my box with five','the five boxing wizards','sphinx of black quartz'],
-      gateWpm: 20, gateAcc: 90,
-    },
-    words: {
-      label: 'Common Words',
-      passages: ['code build create learn','web page style design','function return let const','array object string true','click input button form div'],
-      gateWpm: 30, gateAcc: 88,
-    },
-    code: {
-      label: 'Code Snippets',
-      passages: ["let x = 10;","function add(a, b) {","return a + b;","const name = 'Alex';","document.getElementById('btn')"],
-      gateWpm: 40, gateAcc: 85, gateYr: 5,
-    },
-    speed: {
-      label: 'Speed Run',
-      passages: ['the quick brown fox jumps','over the lazy dog and then','runs back to the start again','speed comes from daily practice','keep your eyes on the text always'],
-      gateWpm: 50, gateAcc: 85,
-    },
-  };
+<div id="results"></div>
+<button class="dl-btn" id="dlBtn" style="display:none" onclick="downloadReport()">⬇ Download JSON Report</button>
 
-  // ── State ────────────────────────────────────────────────────────────────
-  let _level   = 'home';
-  let _text    = '';
-  let _pos     = 0;
-  let _errors  = 0;
-  let _correct = 0;
-  let _start   = null;
-  let _timer   = null;
-  let _active  = false;
+<script src="../assets/js/storage.js"></script>
+<script src="../tests/tests.js"></script>
+<script>
+let _results = [];
+let _passed = 0, _failed = 0, _skipped = 0;
+const startMs = Date.now();
 
-  // ── Build keyboard ───────────────────────────────────────────────────────
-  function buildKeyboard() {
-    KB_ROWS.forEach((row, ri) => {
-      const rowEl = document.getElementById(`kbRow${ri}`);
-      if (!rowEl) return;
-      rowEl.innerHTML = '';
-      row.forEach(k => {
-        const div = document.createElement('div');
-        div.className = 'kk';
-        if (k === 'Space') { div.classList.add('sp'); div.textContent = 'Space'; div.id = 'kk-space'; }
-        else if (WIDE.has(k)) { div.classList.add(k === 'Shift' || k === 'Caps' ? 'w3' : 'w2'); div.textContent = k; }
-        else { div.textContent = k; }
-        if (HOME_ROW.has(k.toLowerCase())) div.classList.add('home-row');
-        div.id = div.id || ('kk-' + k.replace(/[^a-zA-Z0-9]/g, '_'));
-        rowEl.appendChild(div);
-      });
-    });
-  }
+function _addRow(name, status, detail, ms) {
+  const div = document.createElement('div');
+  div.className = `test-row ${status}`;
+  div.innerHTML = `
+    <span class="test-badge badge-${status==='pass'?'pass':status==='fail'?'fail':'run'}">${status.toUpperCase()}</span>
+    <div style="flex:1">
+      <div class="test-name">${name}</div>
+      ${detail ? `<div class="test-detail">${detail}</div>` : ''}
+    </div>
+    ${ms !== undefined ? `<span class="timer">${ms}ms</span>` : ''}
+  `;
+  document.getElementById('results').appendChild(div);
+  document.getElementById('results').scrollTop = 999999;
+}
 
-  // ── Set level ─────────────────────────────────────────────────────────────
-  function setTypingLevel(el, lvl) {
-    document.querySelectorAll('.lp').forEach(p => p.classList.remove('on'));
-    el.classList.add('on');
-    _level = lvl;
-    resetTyping();
-  }
+function _sectionHead(label) {
+  const div = document.createElement('div');
+  div.className = 'section-head';
+  div.textContent = '── ' + label;
+  document.getElementById('results').appendChild(div);
+}
 
-  // ── Reset ─────────────────────────────────────────────────────────────────
-  function resetTyping() {
-    clearInterval(_timer);
-    _active = false; _pos = 0; _errors = 0; _correct = 0; _start = null;
-    const pool = LEVELS[_level]?.passages || LEVELS.home.passages;
-    _text = pool[Math.floor(Math.random() * pool.length)];
-    _setEl('wpmStat', '0'); _setEl('accStat', '100%');
-    _setEl('timeStat', '0s'); _setEl('corStat', '0');
-    _renderPrompt();
-    _highlightNextKey();
-  }
+async function runAllTests() {
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('summary').style.display = 'flex';
+  _results = []; _passed = 0; _failed = 0; _skipped = 0;
+  const t0 = Date.now();
 
-  // ── Start ─────────────────────────────────────────────────────────────────
-  function startTyping() { resetTyping(); _active = true; focusTyping(); }
-  function focusTyping() { document.getElementById('typingHidden')?.focus(); }
-
-  // ── Render prompt ─────────────────────────────────────────────────────────
-  function _renderPrompt() {
-    const el = document.getElementById('typingPrompt');
-    if (!el) return;
-    el.innerHTML = _text.split('').map((c, i) => {
-      let cls = 'ch';
-      if (i < _pos)    cls += ' ck';
-      if (i === _pos)  cls += ' cc';
-      return `<span class="${cls}">${c === ' ' ? '&nbsp;' : c}</span>`;
-    }).join('');
-  }
-
-  // ── Highlight next key ────────────────────────────────────────────────────
-  function _highlightNextKey() {
-    document.querySelectorAll('.kk').forEach(k => k.classList.remove('next','ok','bad'));
-    if (_pos >= _text.length) return;
-    const nk = _text[_pos].toLowerCase();
-    const id = 'kk-' + (nk === ' ' ? 'space' : nk.replace(/[^a-zA-Z0-9]/g, '_'));
-    document.getElementById(id)?.classList.add('next');
-  }
-
-  // ── Handle input ──────────────────────────────────────────────────────────
-  function handleTypingInput(e) {
-    const inp = document.getElementById('typingHidden');
-    const typed = inp.value; inp.value = '';
-    if (!_text || _pos >= _text.length) return;
-    if (!_start) { _start = Date.now(); _startTimer(); }
-
-    const expected = _text[_pos];
-    const id = 'kk-' + (expected === ' ' ? 'space' : expected.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_'));
-    const kEl = document.getElementById(id);
-
-    if (typed === expected) {
-      _correct++;
-      if (kEl) { kEl.classList.add('ok'); setTimeout(() => kEl.classList.remove('ok'), 180); }
-      _pos++;
-      _setEl('corStat', _correct);
-    } else {
-      _errors++;
-      if (kEl) { kEl.classList.add('bad'); setTimeout(() => kEl.classList.remove('bad'), 280); }
-    }
-
-    const acc = Math.round((_correct / (_correct + _errors)) * 100);
-    _setEl('accStat', acc + '%');
-    _renderPrompt();
-    _highlightNextKey();
-
-    if (_pos >= _text.length) {
-      clearInterval(_timer);
-      const elapsed = (Date.now() - _start) / 1000;
-      const wpm = Math.round((_text.split(' ').length / (elapsed / 60)));
-      _setEl('wpmStat', wpm);
-      const best = parseInt(document.getElementById('bestStat')?.textContent) || 0;
-      if (wpm > best) _setEl('bestStat', wpm);
-
-      // Award XP
-      const xpKey = wpm > best ? 'TYPING_PERSONAL_BEST' : 'TYPING_SESSION';
-      TSA.services.xp.addXP(xpKey).then(() => {
-        celebrate('⌨️', 'Session Complete!', `WPM: ${wpm} · Accuracy: ${acc}%`, xpKey === 'TYPING_PERSONAL_BEST' ? '+15 XP 🏆' : '+10 XP');
-        // Check speed typer badge (40+ WPM)
-        if (wpm >= 40) TSA.services.xp.awardBadge('speed_typer');
-      });
-
-      // Persist best WPM to profile
-      TSA.services.sessionManager.getActiveProfile().then(p => {
-        if (p && wpm > (p.typingStats?.bestWpm || 0)) {
-          TSA.services.sessionManager.updateProfile(p.profileId, {
-            typingStats: { ...p.typingStats, bestWpm: wpm, sessionsCompleted: (p.typingStats?.sessionsCompleted || 0) + 1 }
-          });
+  const suites = window.TSA_TESTS || [];
+  for (const suite of suites) {
+    _sectionHead(suite.name);
+    for (const test of suite.tests) {
+      const t1 = Date.now();
+      try {
+        const result = await test.fn();
+        const ms = Date.now() - t1;
+        if (result && result.skip) {
+          _skipped++;
+          _addRow(test.name, 'running', result.reason || 'Skipped', ms);
+        } else if (result && result.pass) {
+          _passed++;
+          _addRow(test.name, 'pass', result.message || '', ms);
+        } else {
+          _failed++;
+          _addRow(test.name, 'fail', result?.message || 'Test returned falsy', ms);
         }
-      });
-
-      setTimeout(resetTyping, 2800);
-    }
-  }
-
-  function handleTypingKey(e) {
-    if (!_active && e.key.length === 1) { _active = true; _start = Date.now(); _startTimer(); }
-  }
-
-  function _startTimer() {
-    clearInterval(_timer);
-    _timer = setInterval(() => {
-      const s = Math.round((Date.now() - _start) / 1000);
-      _setEl('timeStat', s + 's');
-      if (_pos > 0 && s > 0) {
-        const wpm = Math.round(_text.slice(0, _pos).split(' ').length / (s / 60));
-        _setEl('wpmStat', wpm);
+        _results.push({ suite: suite.name, name: test.name, status: result?.skip ? 'skip' : result?.pass ? 'pass' : 'fail', message: result?.message, ms });
+      } catch(e) {
+        const ms = Date.now() - t1;
+        _failed++;
+        _addRow(test.name, 'fail', 'Exception: ' + e.message, ms);
+        _results.push({ suite: suite.name, name: test.name, status: 'fail', message: 'Exception: ' + e.message, ms });
       }
-    }, 500);
-  }
-
-  function _setEl(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val;
-  }
-
-  // ── Wire DOM events ───────────────────────────────────────────────────────
-  function _wireEvents() {
-    const hidden = document.getElementById('typingHidden');
-    if (hidden) {
-      hidden.oninput   = handleTypingInput;
-      hidden.onkeydown = handleTypingKey;
+      // Update counts
+      document.getElementById('passCount').textContent = _passed;
+      document.getElementById('failCount').textContent = _failed;
+      document.getElementById('skipCount').textContent = _skipped;
+      document.getElementById('timeCount').textContent = (Date.now()-t0) + 'ms';
+      // Breathe between tests
+      await new Promise(r => setTimeout(r, 10));
     }
-    const prompt = document.getElementById('typingPrompt');
-    if (prompt) prompt.onclick = focusTyping;
   }
 
-  // ── Init (called when typing screen loads) ────────────────────────────────
-  function init() {
-    buildKeyboard();
-    _wireEvents();
-    resetTyping();
-    // Load personal best from profile
-    TSA.services.sessionManager.getActiveProfile().then(p => {
-      if (p?.typingStats?.bestWpm) _setEl('bestStat', p.typingStats.bestWpm);
-    });
-  }
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('dlBtn').style.display = 'inline-block';
+}
 
-  // Register screen route
-  if (window.TSA) {
-    TSA.routes['typing'] = init;
-  }
-
-  // ── Public API ─────────────────────────────────────────────────────────────
-  return { init, buildKeyboard, resetTyping, startTyping, focusTyping, setTypingLevel, LEVELS };
-})();
-
-// Expose globals used by inline HTML onclick handlers
-window.TSATyping        = TSATyping;
-window.resetTyping      = TSATyping.resetTyping;
-window.startTyping      = TSATyping.startTyping;
-window.focusTyping      = TSATyping.focusTyping;
-window.setTypingLevel   = TSATyping.setTypingLevel;
+function downloadReport() {
+  const report = {
+    generated: new Date().toISOString(),
+    passed: _passed, failed: _failed, skipped: _skipped,
+    total: _results.length,
+    results: _results,
+  };
+  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `ts-test-report-${Date.now()}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

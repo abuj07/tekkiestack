@@ -1,554 +1,1171 @@
-/**
- * TekkieStack 2.0 — Senior Phases Module (Stage 10)
- * Senior Journey: Year 7–11+, Phases S1–S5.
- *
- * S1: Accelerated Foundations    (Y7–8,  4–6 wks)
- * S2: Software Engineering       (Y8–9,  6–8 wks)
- * S3: Real Development           (Y9–10, 6–8 wks)
- * S4: AI Engineering             (Y10–11,6–8 wks)
- * S5: Portfolio Projects         (Y11+,  open-ended)
- *
- * Features:
- *   - Junior history (XP, badges, projects) carries forward visibly
- *   - Guardian View: read-only progress snapshot
- *   - Portfolio Generator: generates HTML portfolio from completed projects
- *
- * Author: Aperintel Ltd
- */
-
-const TSASenior = (() => {
-
-  // ── Phase definitions ─────────────────────────────────────────────────────
-  const PHASES = {
-    s1: {
-      id: 's1', num: 1, code: 'S1', journey: 'senior',
-      title: 'Accelerated Foundations',
-      emoji: '🚀', color: '#6C63FF', bgColor: '#F0EFFF',
-      yearMin: 7, yearMax: 8,
-      gate: null,
-      certificate: 'cert_s1',
-      weeks: '4–6 weeks',
-      description: 'Rapidly master HTML, CSS, and JavaScript. Build on any Junior foundations you have — or start fresh at speed.',
-      xpReward: 100,
-      lessons: [
-        { id: 's1-l1', title: 'HTML5 Semantics',         desc: 'header, nav, main, section, article, footer', activity: 'code', xp: 20 },
-        { id: 's1-l2', title: 'CSS Grid & Flexbox',      desc: 'Modern layout techniques',                    activity: 'code', xp: 20 },
-        { id: 's1-l3', title: 'JavaScript Fundamentals', desc: 'Variables, functions, arrays, objects',        activity: 'code', xp: 20 },
-        { id: 's1-l4', title: 'DOM Manipulation',        desc: 'querySelector, addEventListener, classList',   activity: 'code', xp: 20 },
-        { id: 's1-l5', title: 'Responsive Design',       desc: 'Media queries & mobile-first CSS',            activity: 'code', xp: 20 },
-        { id: 's1-l6', title: 'Build: Personal Site v1', desc: 'Multi-page responsive portfolio',             activity: 'project', xp: 50 },
-      ],
-    },
-
-    s2: {
-      id: 's2', num: 2, code: 'S2', journey: 'senior',
-      title: 'Software Engineering',
-      emoji: '⚙️', color: '#00C9B1', bgColor: '#EDFDF8',
-      yearMin: 8, yearMax: 9,
-      gate: { phase: 's1' },
-      certificate: 'cert_s2',
-      weeks: '6–8 weeks',
-      description: 'Learn how real software is built — APIs, data structures, debugging, testing, and version control with Git.',
-      xpReward: 150,
-      lessons: [
-        { id: 's2-l1', title: 'Git & Version Control',  desc: 'commit, push, pull, branches, merge',          activity: 'code', xp: 25 },
-        { id: 's2-l2', title: 'APIs & Fetch',           desc: 'Calling external APIs, JSON, async/await',     activity: 'code', xp: 25 },
-        { id: 's2-l3', title: 'Data Structures',        desc: 'Arrays, objects, maps, sets in practice',      activity: 'code', xp: 25 },
-        { id: 's2-l4', title: 'Error Handling',         desc: 'try/catch, debugging, console tools',          activity: 'code', xp: 25 },
-        { id: 's2-l5', title: 'Unit Testing Basics',    desc: 'Write tests before you write code',            activity: 'code', xp: 25 },
-        { id: 's2-l6', title: 'Build: Weather App',     desc: 'Fetch live data from a public API',            activity: 'project', xp: 60 },
-        { id: 's2-l7', title: 'Build: Todo App with LocalStorage', desc: 'Persist data across page refreshes', activity: 'project', xp: 40 },
-      ],
-    },
-
-    s3: {
-      id: 's3', num: 3, code: 'S3', journey: 'senior',
-      title: 'Real Development',
-      emoji: '💻', color: '#FF6B6B', bgColor: '#FFF0F0',
-      yearMin: 9, yearMax: 10,
-      gate: { phase: 's2' },
-      certificate: 'cert_s3',
-      weeks: '6–8 weeks',
-      description: 'Work like a professional developer. Use frameworks, build full-stack thinking, and ship polished products.',
-      xpReward: 200,
-      lessons: [
-        { id: 's3-l1', title: 'Introduction to React',   desc: 'Components, props, state, hooks',             activity: 'code', xp: 30 },
-        { id: 's3-l2', title: 'Node.js Foundations',     desc: 'Server-side JS, npm, modules',                activity: 'code', xp: 30 },
-        { id: 's3-l3', title: 'Databases — SQL Basics',  desc: 'Tables, queries, INSERT, SELECT, JOIN',       activity: 'code', xp: 30 },
-        { id: 's3-l4', title: 'Build a REST API',        desc: 'Express.js, routes, CRUD operations',         activity: 'code', xp: 35 },
-        { id: 's3-l5', title: 'Authentication Basics',   desc: 'Passwords, hashing, JWTs, sessions',          activity: 'code', xp: 30 },
-        { id: 's3-l6', title: 'Deploy to the Web',       desc: 'GitHub Pages, Railway, Vercel',               activity: 'code', xp: 25 },
-        { id: 's3-l7', title: 'Build: Full-Stack App',   desc: 'Frontend + backend + database',               activity: 'project', xp: 80 },
-      ],
-    },
-
-    s4: {
-      id: 's4', num: 4, code: 'S4', journey: 'senior',
-      title: 'AI Engineering',
-      emoji: '🤖', color: '#FFB347', bgColor: '#FFF9EC',
-      yearMin: 10, yearMax: 11,
-      gate: { phase: 's3' },
-      certificate: 'cert_s4',
-      weeks: '6–8 weeks',
-      description: 'Build AI-powered applications. Integrate LLMs, understand machine learning concepts, and create intelligent tools.',
-      xpReward: 250,
-      lessons: [
-        { id: 's4-l1', title: 'How LLMs Work',           desc: 'Tokens, context windows, temperature',        activity: 'offline', xp: 20 },
-        { id: 's4-l2', title: 'Prompt Engineering',      desc: 'System prompts, few-shot, chain-of-thought',  activity: 'code',    xp: 30 },
-        { id: 's4-l3', title: 'Calling the Claude API',  desc: 'Messages, system prompts, streaming',         activity: 'code',    xp: 35 },
-        { id: 's4-l4', title: 'RAG Foundations',         desc: 'Embeddings, vector search, context injection', activity: 'code',   xp: 35 },
-        { id: 's4-l5', title: 'AI Safety & Ethics',      desc: 'Bias, misuse, responsible AI development',    activity: 'offline', xp: 20 },
-        { id: 's4-l6', title: 'Build: AI Study Assistant', desc: 'Full app using Claude API + your notes',    activity: 'project', xp: 100 },
-      ],
-    },
-
-    s5: {
-      id: 's5', num: 5, code: 'S5', journey: 'senior',
-      title: 'Portfolio Projects',
-      emoji: '🏛️', color: '#2EC4B6', bgColor: '#EDFDF8',
-      yearMin: 11, yearMax: 99,
-      gate: { phase: 's4' },
-      certificate: 'cert_s5',
-      weeks: 'Open-ended',
-      description: 'Build your own original projects, guided by your interests. Ship real products, write technical write-ups, and publish your portfolio.',
-      xpReward: 500,
-      lessons: [
-        { id: 's5-l1', title: 'Choose Your Project',     desc: 'Scope, plan, and spec your idea',             activity: 'offline', xp: 20 },
-        { id: 's5-l2', title: 'Sprint Planning',         desc: 'Break work into 2-week sprints',              activity: 'offline', xp: 20 },
-        { id: 's5-l3', title: 'Build Sprint 1',          desc: 'Core feature working',                        activity: 'project', xp: 60 },
-        { id: 's5-l4', title: 'Build Sprint 2',          desc: 'Polish and edge cases',                       activity: 'project', xp: 60 },
-        { id: 's5-l5', title: 'Technical Write-up',      desc: 'Document what you built and how',             activity: 'offline', xp: 40 },
-        { id: 's5-l6', title: 'Publish Portfolio',       desc: 'Deploy and share your work',                  activity: 'project', xp: 100 },
-      ],
-    },
-  };
-
-  // ── Gate check ────────────────────────────────────────────────────────────
-  function checkGate(phase, profile) {
-    if (!phase.gate) return { unlocked: true, reason: '' };
-    if (profile.yearGroup < phase.yearMin) {
-      return { unlocked: false, reason: `Available from Year ${phase.yearMin}` };
-    }
-    const gatePhase = phase.gate.phase;
-    if (gatePhase) {
-      const prog = profile.phaseProgress?.[gatePhase];
-      if (!prog?.done) {
-        const gPh = PHASES[gatePhase];
-        return { unlocked: false, reason: `Complete Phase ${gPh?.code || gatePhase} first` };
-      }
-    }
-    return { unlocked: true, reason: '' };
-  }
-
-  // ── Mark lesson complete ───────────────────────────────────────────────────
-  async function markLessonComplete(phaseId, lessonId) {
-    const profile = await window.TSA.services.sessionManager.getActiveProfile();
-    if (!profile) return;
-
-    const prog = { ...(profile.phaseProgress || {}) };
-    if (!prog[phaseId]) prog[phaseId] = { lessonsComplete: [], done: false };
-    if (!prog[phaseId].lessonsComplete.includes(lessonId)) {
-      prog[phaseId].lessonsComplete.push(lessonId);
-    }
-
-    const phase   = PHASES[phaseId];
-    const lessons = phase?.lessons || [];
-    if (lessons.length > 0 && prog[phaseId].lessonsComplete.length >= lessons.length && !prog[phaseId].done) {
-      prog[phaseId].done = true;
-      await window.TSA.services.xp.addXP('CERTIFICATE');
-      await window.TSA.services.xp.awardBadge(`phase${phase.num}_complete`);
-      celebrate(phase.emoji, `Phase ${phase.code} Complete!`, phase.title, `+${phase.xpReward} XP 🎓`);
-    }
-
-    await window.TSA.services.sessionManager.updateProfile(profile.profileId, { phaseProgress: prog });
-    await window.TSA.services.xp.addXP('LESSON_COMPLETE');
-  }
-
-  // ── Render Senior Journey ─────────────────────────────────────────────────
-  async function renderSeniorJourney() {
-    const screen = document.getElementById('s-senior');
-    if (!screen) return;
-
-    const profile = await window.TSA.services.sessionManager.getActiveProfile();
-    if (!profile) { go('picker'); return; }
-
-    // Show junior history carried forward
-    const juniorXp     = profile.yearGroup < 7 ? profile.xp : 0;
-    const juniorBadges = (profile.badges || []).filter(b => b.startsWith('phase') && ['1','2','3','4'].includes(b.replace(/\D/g,'')));
-
-    screen.innerHTML = `
-      <div style="max-width:1060px;margin:0 auto;padding:28px 18px">
-        <div style="margin-bottom:22px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
-          <div>
-            <h2 style="font-family:'Fredoka One',cursive;font-size:27px;color:var(--navy)">🎓 Senior Journey</h2>
-            <p style="font-size:14px;color:var(--muted);margin-top:4px;font-weight:500">Year 7–11+ · 5 phases · Professional development skills</p>
-          </div>
-          <div style="display:flex;gap:9px">
-            <button class="btn btn-gh" onclick="TSASenior.showGuardianView()">👁 Guardian View</button>
-            <button class="btn btn-cy" onclick="TSASenior.generatePortfolio()">🎨 Generate Portfolio</button>
-          </div>
-        </div>
-
-        ${juniorBadges.length > 0 ? `
-          <div style="background:linear-gradient(135deg,rgba(0,201,177,.08),rgba(108,99,255,.06));border:1px solid rgba(0,201,177,.2);border-radius:var(--r-lg);padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span style="font-size:20px">🏆</span>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--navy)">Junior history carried forward</div>
-              <div style="font-size:12px;color:var(--muted);font-weight:500">${juniorBadges.length} Junior phases complete · ${profile.xp} total XP</div>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto">
-              ${juniorBadges.map(b => `<span style="background:#D0F5EC;color:#0A6E56;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px">${b.replace('_complete','').replace('phase','Phase ')}</span>`).join('')}
-            </div>
-          </div>
-        ` : ''}
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          ${Object.values(PHASES).map(ph => {
-            const gate = checkGate(ph, profile);
-            const prog = profile.phaseProgress?.[ph.id] || {};
-            const lessons = ph.lessons || [];
-            const done = lessons.filter(l => prog.lessonsComplete?.includes(l.id)).length;
-            const pct  = lessons.length > 0 ? Math.round((done / lessons.length) * 100) : 0;
-            const isDone    = prog.done === true;
-            const isCurrent = !isDone && gate.unlocked;
-            return `
-              <div class="card" style="border:1.5px solid ${isDone ? '#2EC4B6' : isCurrent ? ph.color : 'var(--border)'};background:${isDone ? '#EDFDF8' : '#fff'};cursor:${gate.unlocked ? 'pointer' : 'default'};transition:all .2s"
-                onclick="${gate.unlocked ? `TSASenior.openPhase('${ph.id}')` : ''}">
-                <div style="display:flex;align-items:center;gap:13px;margin-bottom:11px">
-                  <div style="width:48px;height:48px;border-radius:11px;background:${ph.bgColor};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${ph.emoji}</div>
-                  <div style="flex:1">
-                    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--navy)">Phase ${ph.code}: ${ph.title}</div>
-                    <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">Year ${ph.yearMin}${ph.yearMax < 99 ? '–'+ph.yearMax : '+'} · ${ph.weeks}</div>
-                  </div>
-                  <div style="font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px;${isDone ? 'background:#D0F5EC;color:#0A6E56' : isCurrent ? `background:${ph.bgColor};color:${ph.color}` : 'background:var(--slate);color:var(--muted)'}">
-                    ${isDone ? '✅ Done' : isCurrent ? 'Active' : gate.reason || '🔒'}
-                  </div>
-                </div>
-                <p style="font-size:13px;color:var(--muted);font-weight:500;margin-bottom:${lessons.length > 0 ? '11px' : '0'};line-height:1.5">${ph.description}</p>
-                ${lessons.length > 0 ? `
-                  <div style="background:var(--slate);border-radius:5px;height:5px;overflow:hidden;margin-bottom:4px">
-                    <div style="height:100%;border-radius:5px;background:${ph.color};width:${pct}%;transition:width .7s"></div>
-                  </div>
-                  <div style="font-size:11px;color:var(--muted);font-weight:700">${done}/${lessons.length} lessons · ${pct}%</div>
-                ` : ''}
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  // ── Open phase detail ──────────────────────────────────────────────────────
-  async function openPhase(phaseId) {
-    const phase   = PHASES[phaseId];
-    const profile = await window.TSA.services.sessionManager.getActiveProfile();
-    if (!phase || !profile) return;
-    const gate = checkGate(phase, profile);
-    if (!gate.unlocked) { alert(`Not unlocked: ${gate.reason}`); return; }
-
-    const prog    = profile.phaseProgress?.[phaseId] || {};
-    const screen  = document.getElementById('s-senior');
-    if (!screen) return;
-
-    screen.innerHTML = `
-      <div style="max-width:860px;margin:0 auto;padding:28px 18px">
-        <button class="btn btn-gh" onclick="TSASenior.renderSeniorJourney()" style="margin-bottom:20px">← Back to Journey</button>
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
-          <div style="width:58px;height:58px;border-radius:13px;background:${phase.bgColor};display:flex;align-items:center;justify-content:center;font-size:26px">${phase.emoji}</div>
-          <div>
-            <h2 style="font-family:'Fredoka One',cursive;font-size:23px;color:var(--navy)">Phase ${phase.code}: ${phase.title}</h2>
-            <div style="font-size:13px;color:var(--muted);font-weight:600">Year ${phase.yearMin}${phase.yearMax < 99 ? '–'+phase.yearMax : '+'} · ${phase.weeks} · +${phase.xpReward} XP on completion</div>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:9px">
-          ${phase.lessons.map((lesson, idx) => {
-            const done = prog.lessonsComplete?.includes(lesson.id);
-            const prev = idx === 0 || prog.lessonsComplete?.includes(phase.lessons[idx-1].id);
-            return `
-              <div class="card" style="border:1.5px solid ${done ? '#2EC4B6' : prev ? phase.color : 'var(--border)'};cursor:${prev ? 'pointer' : 'default'};opacity:${prev ? 1 : .5}"
-                onclick="${prev ? `TSASenior.openLesson('${phaseId}','${lesson.id}')` : ''}">
-                <div style="display:flex;align-items:center;gap:11px">
-                  <div style="font-size:20px">${done ? '✅' : prev ? '▶️' : '🔒'}</div>
-                  <div style="flex:1">
-                    <div style="font-weight:700;color:var(--navy);font-size:14px">${lesson.title}</div>
-                    <div style="font-size:12px;color:var(--muted);font-weight:500;margin-top:1px">${lesson.desc}</div>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <span style="font-size:10px;font-weight:800;background:${lesson.activity==='project'?'var(--amber)':'var(--slate)'};color:${lesson.activity==='project'?'var(--navy)':'var(--muted)'};padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.5px">${lesson.activity}</span>
-                    <span style="font-size:11px;font-weight:800;color:var(--amber)">+${lesson.xp} XP</span>
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  // ── Open lesson ────────────────────────────────────────────────────────────
-  function openLesson(phaseId, lessonId) {
-    const phase  = PHASES[phaseId];
-    const lesson = phase?.lessons?.find(l => l.id === lessonId);
-    if (!lesson) return;
-
-    if (lesson.activity === 'code' || lesson.activity === 'project') {
-      // Redirect to code editor with context
-      go('editor');
-      setTimeout(() => {
-        const title = document.getElementById('lessonTitle');
-        const desc  = document.getElementById('lessonDesc');
-        if (title) title.textContent = `${phase.code} · ${lesson.title}`;
-        if (desc)  desc.textContent  = lesson.desc;
-      }, 150);
-      return;
-    }
-
-    // Render inline content for offline lessons
-    const screen = document.getElementById('s-senior');
-    if (!screen) return;
-    screen.innerHTML = `
-      <div style="max-width:800px;margin:0 auto;padding:28px 18px">
-        <button class="btn btn-gh" onclick="TSASenior.openPhase('${phaseId}')" style="margin-bottom:16px">← Back to Phase</button>
-        <div class="card">
-          <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--navy);margin-bottom:8px">${lesson.title}</div>
-          <div style="font-size:14px;color:var(--muted);font-weight:500;margin-bottom:16px">${lesson.desc}</div>
-          <div style="background:var(--slate);border-radius:11px;padding:20px;font-size:14px;color:var(--ink);line-height:1.75">
-            📖 Full lesson content for <strong>${lesson.title}</strong> — built out in Stage 10 detailed content pass.
-            <br><br>This lesson covers: <em>${lesson.desc}</em>
-          </div>
-        </div>
-        <div style="margin-top:20px;text-align:center">
-          <button class="btn btn-cy btn-full" style="max-width:320px;margin:0 auto"
-            onclick="TSASenior.markLessonComplete('${phaseId}','${lessonId}').then(()=>TSASenior.openPhase('${phaseId}'))">
-            ✓ Mark Complete (+${lesson.xp} XP)
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  // ── Guardian View ──────────────────────────────────────────────────────────
-  /**
-   * Read-only progress snapshot for parents/teachers.
-   * Renders as a modal overlay — no editing possible.
-   */
-  async function showGuardianView() {
-    const profile = await window.TSA.services.sessionManager.getActiveProfile();
-    if (!profile) return;
-    // Shorthand escaper — XSS prevention for all user data in innerHTML
-    const e = window.TSASecurity ? window.TSASecurity.esc : (s => String(s || ''));
-
-    // Build progress summary
-    const allPhases  = { ...window.TSAJunior?.PHASES || {}, ...PHASES };
-    const phaseRows  = Object.values(allPhases).map(ph => {
-      const prog    = profile.phaseProgress?.[ph.id] || {};
-      const lessons = ph.lessons || [];
-      const done    = lessons.filter(l => prog.lessonsComplete?.includes(l.id)).length;
-      const pct     = lessons.length > 0 ? Math.round((done / lessons.length) * 100) : (prog.done ? 100 : 0);
-      return `
-        <tr>
-          <td style="padding:9px 12px;font-size:13px;font-weight:700;color:var(--navy)">${ph.emoji} Phase ${ph.code || ph.num}: ${ph.title}</td>
-          <td style="padding:9px 12px;text-align:center">
-            <div style="background:var(--slate);border-radius:4px;height:8px;width:100px;overflow:hidden;display:inline-block">
-              <div style="height:100%;border-radius:4px;background:${prog.done ? '#2EC4B6' : 'var(--cyan)'};width:${pct}%"></div>
-            </div>
-          </td>
-          <td style="padding:9px 12px;text-align:center;font-size:12px;font-weight:700;color:${prog.done ? '#0A6E56' : 'var(--muted)'}">
-            ${prog.done ? '✅ Complete' : done > 0 ? `${done}/${lessons.length} lessons` : 'Not started'}
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    const ov = document.createElement('div');
-    ov.className = 'overlay show';
-    ov.id = 'guardianView';
-    ov.innerHTML = `
-      <div style="background:#fff;border-radius:22px;padding:36px 32px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--sh-lg)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
-          <div>
-            <div style="font-family:'Fredoka One',cursive;font-size:23px;color:var(--navy)">👁 Guardian View</div>
-            <div style="font-size:13px;color:var(--muted);font-weight:500;margin-top:3px">Read-only · Generated ${new Date().toLocaleDateString('en-GB')}</div>
-          </div>
-          <button class="btn btn-gh" onclick="document.getElementById('guardianView').remove()">✕ Close</button>
-        </div>
-
-        <!-- Learner card -->
-        <div style="background:linear-gradient(130deg,var(--navy),var(--navy2));border-radius:var(--r-lg);padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
-          <div style="font-size:46px">${e(profile.avatar)}</div>
-          <div>
-            <div style="font-family:'Fredoka One',cursive;font-size:21px;color:#fff">${e(profile.name)}</div>
-            <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:2px;font-weight:500">Year ${e(String(profile.yearGroup))} · ${profile.journeyType === 'junior' ? 'Junior' : 'Senior'} Journey</div>
-            <div style="display:flex;gap:14px;margin-top:9px;flex-wrap:wrap">
-              <span style="font-size:12px;font-weight:800;color:var(--amber)">⭐ ${profile.xp} XP</span>
-              <span style="font-size:12px;font-weight:800;color:var(--coral)">🔥 ${profile.streak || 0}-day streak</span>
-              <span style="font-size:12px;font-weight:800;color:var(--cyan)">🏅 ${(profile.badges||[]).length} badges</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Phase progress table -->
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">Learning Progress</div>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-          <thead>
-            <tr style="background:var(--slate)">
-              <th style="padding:9px 12px;text-align:left;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Phase</th>
-              <th style="padding:9px 12px;text-align:center;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Progress</th>
-              <th style="padding:9px 12px;text-align:center;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${phaseRows}
-          </tbody>
-        </table>
-
-        <!-- Badges -->
-        ${profile.badges?.length ? `
-          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">Badges Earned</div>
-          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px">
-            ${profile.badges.map(b => {
-              const badge = window.TSA.services.xp.getBadge(b);
-              return `<span style="background:var(--slate);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--navy)">${badge.emoji} ${badge.label}</span>`;
-            }).join('')}
-          </div>
-        ` : ''}
-
-        <!-- Typing stats -->
-        ${profile.typingStats?.bestWpm > 0 ? `
-          <div style="background:var(--slate);border-radius:11px;padding:14px 16px;margin-bottom:16px">
-            <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Typing Performance</div>
-            <div style="display:flex;gap:20px">
-              <div><div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--navy)">${profile.typingStats.bestWpm}</div><div style="font-size:11px;color:var(--muted);font-weight:700">Best WPM</div></div>
-              <div><div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--navy)">${profile.typingStats.sessionsCompleted || 0}</div><div style="font-size:11px;color:var(--muted);font-weight:700">Sessions</div></div>
-            </div>
-          </div>
-        ` : ''}
-
-        <p style="font-size:12px;color:var(--muted);text-align:center;line-height:1.6">
-          This is a read-only snapshot of learning progress stored on this device.<br>
-          No data is sent to any server in Release 1 · TekkieStack by Aperintel Ltd
-        </p>
-      </div>
-    `;
-    document.body.appendChild(ov);
-  }
-
-  // ── Portfolio Generator ────────────────────────────────────────────────────
-  /**
-   * Generates a downloadable HTML portfolio from the learner's completed projects.
-   */
-  async function generatePortfolio() {
-    const profile  = await window.TSA.services.sessionManager.getActiveProfile();
-    const projects = await window.TSA.storage.getByIndex('projects_store', 'profileId', profile.profileId);
-
-    const completedPhases = Object.entries(profile.phaseProgress || {})
-      .filter(([, v]) => v.done)
-      .map(([k]) => {
-        const ph = PHASES[k] || window.TSAJunior?.PHASES?.[k];
-        return ph ? `${ph.emoji} Phase ${ph.code || ph.num}: ${ph.title}` : k;
-      });
-
-    const projectCards = projects.length > 0
-      ? projects.map(p => `
-          <div class="project-card">
-            <h3>${p.name || 'Untitled Project'}</h3>
-            <p class="meta">Saved ${new Date(p.updatedAt || p.createdAt).toLocaleDateString('en-GB')}</p>
-            <div class="preview-box">
-              <iframe srcdoc="${(p.code || '').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}" style="width:100%;height:200px;border:none;border-radius:8px"></iframe>
-            </div>
-          </div>
-        `).join('')
-      : '<p style="color:#6B7A99;text-align:center;padding:30px">No saved projects yet — build something in the Code Editor!</p>';
-
-    const html = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${profile.name}'s TekkieStack Portfolio</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Segoe UI',sans-serif; background:#0F1F3D; color:#CDD9F0; padding:36px 24px; }
-  .hero { text-align:center; margin-bottom:48px; padding:48px 24px; background:rgba(0,201,177,.05); border:1px solid rgba(0,201,177,.15); border-radius:20px; }
-  .avatar { font-size:72px; display:block; margin-bottom:14px; }
-  h1 { font-size:42px; color:#fff; margin-bottom:6px; }
-  .tagline { font-size:17px; color:rgba(255,255,255,.55); margin-bottom:20px; }
-  .stats { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
-  .stat { text-align:center; }
-  .stat-n { font-size:30px; font-weight:700; color:#00C9B1; }
-  .stat-l { font-size:12px; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:1px; margin-top:3px; }
-  h2 { font-size:26px; color:#fff; margin:40px 0 18px; }
-  .phases { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:40px; }
-  .phase-chip { background:rgba(0,201,177,.12); border:1px solid rgba(0,201,177,.25); border-radius:20px; padding:7px 16px; font-size:13px; font-weight:700; color:#00C9B1; }
-  .projects { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; }
-  .project-card { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:20px; }
-  .project-card h3 { font-size:16px; color:#fff; margin-bottom:5px; }
-  .meta { font-size:12px; color:rgba(255,255,255,.4); margin-bottom:12px; }
-  .preview-box { background:#fff; border-radius:8px; overflow:hidden; }
-  .badges { display:flex; flex-wrap:wrap; gap:8px; }
-  .badge { background:rgba(255,179,71,.1); border:1px solid rgba(255,179,71,.25); border-radius:20px; padding:5px 13px; font-size:13px; color:#FFB347; }
-  .footer { text-align:center; margin-top:52px; padding-top:28px; border-top:1px solid rgba(255,255,255,.07); font-size:12px; color:rgba(255,255,255,.25); }
-</style>
+<meta name="theme-color" content="#0F1F3D">
+<meta name="description" content="TekkieStack — Coding education for children Year 3–11. Browser-native, offline-first.">
+<title>TekkieStack 2.0</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
-<div class="hero">
-  <span class="avatar">${profile.avatar}</span>
-  <h1>${profile.name}'s Portfolio</h1>
-  <p class="tagline">Year ${profile.yearGroup} · TekkieStack Learner · Built with code</p>
-  <div class="stats">
-    <div class="stat"><div class="stat-n">${profile.xp}</div><div class="stat-l">Total XP</div></div>
-    <div class="stat"><div class="stat-n">${profile.streak || 0}</div><div class="stat-l">Day Streak</div></div>
-    <div class="stat"><div class="stat-n">${(profile.badges||[]).length}</div><div class="stat-l">Badges</div></div>
-    <div class="stat"><div class="stat-n">${projects.length}</div><div class="stat-l">Projects</div></div>
-    ${profile.typingStats?.bestWpm ? `<div class="stat"><div class="stat-n">${profile.typingStats.bestWpm}</div><div class="stat-l">Best WPM</div></div>` : ''}
+
+<!-- ── Skip to content (WCAG 2.1 AA) ──────────────────────────────────── -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ── Offline banner ────────────────────────────────────────────────────── -->
+<div id="offlineBanner" role="alert" aria-live="polite">⚡ You are offline — all features still work</div>
+
+<!-- ── Navigation ────────────────────────────────────────────────────────── -->
+<nav class="nav" aria-label="Main navigation">
+  <div class="nav-brand" onclick="go('picker')">
+    <img src="assets/img/logo.png" class="nav-logo" alt="TekkieStack">
+    <span class="nav-brand-text">Tekkie<span>stack</span></span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nb" id="nb-picker"    onclick="go('picker')">Profiles</button>
+    <button class="nb" id="nb-dashboard" onclick="need('dashboard')">Dashboard</button>
+    <button class="nb" id="nb-junior"    onclick="need('junior')">Junior Journey</button>
+    <button class="nb" id="nb-senior"    onclick="need('senior')">Senior Journey</button>
+    <button class="nb" id="nb-typing"    onclick="need('typing')">Typing</button>
+    <button class="nb" id="nb-editor"    onclick="need('editor')">Code Editor</button>
+    <button class="nb" id="nb-ai"        onclick="need('ai')">AI Lab</button>
+    <button class="nb" id="nb-tipjar"    onclick="go('tipjar')">Tip Jar ☕</button>
+    <button class="nb" id="nb-support"   onclick="go('support')">Support</button>
+  </div>
+  <div class="nav-right">
+    <div class="xp-pill" id="navXpPill" style="display:none">
+      <span class="streak-tag">🔥&nbsp;<span id="nStreak">0</span></span>
+      <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+      <span class="xp-num" id="xpNum">0 XP</span>
+    </div>
+    <div class="nav-chip" id="navChip" style="display:none" onclick="promptEnd()">
+      <span class="c-av" id="cAv">🚀</span>
+      <div><div class="c-name" id="cName">–</div><div class="c-xp" id="cXp">0 XP</div></div>
+    </div>
+    <button class="end-btn" id="endBtn" style="display:none" onclick="promptEnd()">End Session</button>
+  </div>
+</nav>
+
+<!-- ── PIN Modal ─────────────────────────────────────────────────────────── -->
+<div class="overlay" id="pinOvl">
+  <div class="modal">
+    <span class="modal-avatar" id="mAv">🚀</span>
+    <div class="modal-title" id="mNm">Name</div>
+    <div class="modal-sub">Enter your 4-digit PIN</div>
+    <div class="pin-dots">
+      <div class="pd" id="pd0"></div><div class="pd" id="pd1"></div>
+      <div class="pd" id="pd2"></div><div class="pd" id="pd3"></div>
+    </div>
+    <div class="pin-err" id="pinErr"></div>
+    <div class="numpad">
+      <button class="npb" onclick="pk('1')">1</button>
+      <button class="npb" onclick="pk('2')">2</button>
+      <button class="npb" onclick="pk('3')">3</button>
+      <button class="npb" onclick="pk('4')">4</button>
+      <button class="npb" onclick="pk('5')">5</button>
+      <button class="npb" onclick="pk('6')">6</button>
+      <button class="npb" onclick="pk('7')">7</button>
+      <button class="npb" onclick="pk('8')">8</button>
+      <button class="npb" onclick="pk('9')">9</button>
+      <button class="npb" style="visibility:hidden"></button>
+      <button class="npb" onclick="pk('0')">0</button>
+      <button class="npb del" onclick="pd_()">⌫</button>
+    </div>
+    <div class="modal-link" onclick="closePinModal()">Cancel</div>
   </div>
 </div>
 
-${completedPhases.length ? `<h2>📚 Phases Completed</h2><div class="phases">${completedPhases.map(p=>`<span class="phase-chip">${p}</span>`).join('')}</div>` : ''}
-
-<h2>🚀 Projects</h2>
-<div class="projects">${projectCards}</div>
-
-${profile.badges?.length ? `<h2>🏅 Badges</h2><div class="badges">${profile.badges.map(b => { const badge = window.TSA.services.xp.getBadge(b); return `<span class="badge">${badge.emoji} ${badge.label}</span>`; }).join('')}</div>` : ''}
-
-<div class="footer">
-  Generated by TekkieStack · ${new Date().toLocaleDateString('en-GB')} · Built by Aperintel Ltd
+<!-- ── End Session Modal ──────────────────────────────────────────────────── -->
+<div class="overlay" id="endOvl">
+  <div class="modal" style="max-width:390px">
+    <span style="font-size:50px;display:block;margin-bottom:12px" id="eMoAv">🚀</span>
+    <div class="modal-title" id="eMoTi">Done for now?</div>
+    <div class="modal-sub">Your progress is saved. End session so someone else can use TekkieStack.</div>
+    <div class="brow">
+      <button class="btn btn-gh" style="flex:1;justify-content:center" onclick="document.getElementById('endOvl').classList.remove('show')">Keep Going</button>
+      <button class="btn btn-co" style="flex:1;justify-content:center" onclick="endSession()">End Session</button>
+    </div>
+  </div>
 </div>
-</body>
-</html>`;
 
-    // Download
-    const blob = new Blob([html], { type: 'text/html' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = `${profile.name.toLowerCase().replace(/\s+/g,'-')}-tekkiestack-portfolio.html`;
-    a.click();
-    URL.revokeObjectURL(url);
+<!-- ── Celebration Overlay ────────────────────────────────────────────────── -->
+<div class="celeb-overlay" id="celebOverlay">
+  <div class="celeb-card" id="celebCard">
+    <span class="celeb-em" id="celebEm">🏆</span>
+    <div class="celeb-title" id="celebTi">Done!</div>
+    <div class="celeb-sub"  id="celebSu">Great work!</div>
+    <div class="celeb-xp"   id="celebXp">+20 XP</div>
+    <button class="btn btn-cy btn-full" onclick="closeC()">Keep Building →</button>
+  </div>
+</div>
 
-    await window.TSA.services.xp.awardBadge('portfolio_published').then(awarded => {
-      if (awarded) celebrate('🎨', 'Portfolio Published!', 'Download complete', '+10 XP');
-    });
-  }
+<!-- ════════════════════════════════════════════════════
+     SCREEN: PROFILE PICKER
+════════════════════════════════════════════════════ -->
+<main id="main-content"><div id="s-picker" class="screen on">
+  <div class="picker">
+    <img src="assets/img/logo.png" class="picker-logo" alt="TekkieStack">
+    <div class="picker-title">Who's learning today?</div>
+    <div class="picker-sub" id="pickerSub">Tap your profile to get started</div>
+    <div class="profiles-grid" id="profilesGrid"></div>
+    <div class="picker-ft">Each profile is protected by a personal 4-digit PIN</div>
+    <div class="picker-tip-nudge" onclick="go('tipjar')">
+      <span>☕</span>
+      <span>TekkieStack is <strong>free for every child</strong>. If you find it useful, <strong>buy us a coffee →</strong></span>
+    </div>
+  </div>
+</div>
 
-  // ── Ensure s-senior screen exists ─────────────────────────────────────────
-  function ensureScreen() {
-    if (!document.getElementById('s-senior')) {
-      const div = document.createElement('div');
-      div.id = 's-senior';
-      div.className = 'screen';
-      document.body.insertBefore(div, document.querySelector('.site-footer'));
+<!-- ════════════════════════════════════════════════════
+     SCREEN: DASHBOARD
+════════════════════════════════════════════════════ -->
+<div id="s-dashboard" class="screen">
+  <div class="dgrid">
+    <div class="card c-welcome">
+      <div class="clabel">Welcome back</div>
+      <h2 id="welH">Hello! 👋</h2>
+      <p>Keep the streak alive! You're making great progress.</p>
+      <div class="brow">
+        <button class="btn btn-cy" onclick="go('editor')">Continue Learning →</button>
+        <button class="btn" style="background:rgba(255,255,255,.12);color:#fff" onclick="go('ai')">AI Lab</button>
+        <button class="btn" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)" onclick="go('typing')">Typing Trainer</button>
+      </div>
+    </div>
+    <div class="card c-streak">
+      <div class="clabel">Current Streak</div>
+      <div class="streak-big" id="dashStrk">0</div>
+      <div class="streak-sub">days in a row 🔥</div>
+      <div class="streak-b">Keep it going!</div>
+    </div>
+    <div class="card c-daily">
+      <div class="clabel">Today's Challenge</div>
+      <div class="dbadge">⚡ Daily</div>
+      <div class="daily-title">Fix the Broken Button</div>
+      <div class="daily-desc">There's a bug in the JavaScript — the button isn't responding to clicks. Find the typo and fix it!</div>
+      <div class="mtags"><span class="mtag">⏱ 5 mins</span><span class="mtag">🐛 Debug</span><span class="mtag">+15 XP</span></div>
+      <div class="brow">
+        <button class="btn btn-cy" onclick="go('editor')">Start Challenge</button>
+        <button class="btn btn-gh" onclick="TSA.services.xp.addXP('DAILY_CHALLENGE').then(r => { celebrate('🌟','Challenge Done!','Fixed in one go!','+15 XP'); })">Quick Complete</button>
+      </div>
+    </div>
+    <div class="card c-phases">
+      <div class="clabel">Learning Map</div>
+      <div class="phase-item done"><div class="pib" style="background:#D0F5EC">✅</div><div><div class="phase-name">Phase 1</div><div class="phase-sub">Think Like a Builder</div></div><span class="pchip ch-d">Done</span></div>
+      <div class="phase-item cur" onclick="go('editor')"><div class="pib" style="background:#E8E6FF">🌐</div><div><div class="phase-name">Phase 2</div><div class="phase-sub">Build the Web</div></div><span class="pchip ch-c">Active</span></div>
+      <div class="phase-item" onclick="go('typing')"><div class="pib" style="background:#FFF3E0">⌨️</div><div><div class="phase-name">Typing Trainer</div><div class="phase-sub">Speed &amp; accuracy</div></div><span class="pchip ch-c">Active</span></div>
+      <div class="phase-item locked"><div class="pib" style="background:#EDE9FE">🔧</div><div><div class="phase-name">Phase 3</div><div class="phase-sub">Smart Builder</div></div><span class="pchip ch-l">🔒 Soon</span></div>
+      <div class="phase-item locked"><div class="pib" style="background:#F1F5F9">🤖</div><div><div class="phase-name">Phase 4</div><div class="phase-sub">AI &amp; Engineering</div></div><span class="pchip ch-l">🔒 Y5+</span></div>
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px">Senior Journey</div>
+      <div class="phase-item locked"><div class="pib" style="background:#FEF3C7">🚀</div><div><div class="phase-name">Phases S1–S5</div><div class="phase-sub">Year 7–11</div></div><span class="pchip ch-l">🔒 Y7+</span></div>
+    </div>
+    <div class="card c-projs">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="clabel" style="margin-bottom:0">My Projects</div>
+        <button class="btn btn-gh" style="font-size:12px;padding:5px 11px" onclick="go('editor')">+ New</button>
+      </div>
+      <div class="projects-grid">
+        <div class="proj-card" onclick="go('editor')"><div class="proj-thumb" style="background:linear-gradient(135deg,#667eea,#764ba2)">🌟</div><div class="proj-info"><div class="proj-name">My Portfolio Page</div><div class="proj-date">2 days ago</div></div></div>
+        <div class="proj-card" onclick="go('editor')"><div class="proj-thumb" style="background:linear-gradient(135deg,#f093fb,#f5576c)">🎮</div><div class="proj-info"><div class="proj-name">Colour Quiz Game</div><div class="proj-date">5 days ago</div></div></div>
+        <div class="proj-add" onclick="go('editor')"><div style="font-size:26px;color:var(--muted);margin-bottom:5px">➕</div><div style="font-size:12px;font-weight:700;color:var(--muted)">New Project</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SCREEN: CODE EDITOR (Stage 5)
+════════════════════════════════════════════════════ -->
+<div id="s-editor" class="screen">
+  <div class="escreen">
+    <div class="eheader">
+      <div>
+        <div style="font-family:'Fredoka One',cursive;font-size:21px;color:var(--navy)" id="lessonTitle">Phase 2 · Lesson 3 — CSS Styling</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;font-weight:500" id="lessonDesc">Make your page look amazing with colours and fonts</div>
+      </div>
+      <div class="brow">
+        <button class="btn btn-gh" id="hintBtn" onclick="showHint()">💡 Hint</button>
+        <button class="btn btn-nv" onclick="runCode()">▶ Run</button>
+        <button class="btn btn-am" onclick="markLessonDone()">✓ Mark Done</button>
+      </div>
+    </div>
+    <div class="elayout">
+      <div class="code-pane">
+        <div class="pane-bar">
+          <div class="pane-dot" style="background:#FF5F57"></div>
+          <div class="pane-dot" style="background:#FEBC2E"></div>
+          <div class="pane-dot" style="background:#28C840"></div>
+          <span class="pane-label">index.html</span>
+        </div>
+        <textarea class="code-textarea" id="codeInput" spellcheck="false" oninput="runCode()"><!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: #0F1F3D;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 36px;
     }
+    h1 { color: #00C9B1; font-size: 34px; }
+    p  { font-size: 17px; line-height: 1.6; opacity: 0.8; }
+    .card {
+      background: rgba(255,255,255,0.08);
+      padding: 20px;
+      border-radius: 14px;
+      margin-top: 20px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello, I'm learning to code! 👋</h1>
+  <p>I'm building my first web page with TekkieStack.</p>
+  <div class="card">
+    <p>My favourite colour is teal. 🩵</p>
+  </div>
+</body>
+</html></textarea>
+      </div>
+      <div class="preview-pane">
+        <div class="preview-bar">
+          <span>🌐</span>
+          <div class="url-pill">preview · my-page.html</div>
+          <span class="live-badge">● LIVE</span>
+        </div>
+        <iframe class="preview-frame" id="previewFrame"></iframe>
+      </div>
+    </div>
+    <div class="hint-bar" id="hintBar" style="display:none">
+      <span style="font-size:19px">💡</span>
+      <div class="hint-text" id="hintText">Click the hint button to get a tip.</div>
+      <button class="btn btn-gh" style="font-size:12px;padding:5px 10px;margin-left:auto;flex-shrink:0" onclick="nextHint()">Next hint →</button>
+    </div>
+    <div class="step-row">
+      <span style="font-size:13px;font-weight:700;color:var(--muted)">Lesson progress</span>
+      <div class="step-dots" id="stepDots"></div>
+      <span style="font-size:12px;color:var(--muted);margin-left:auto" id="stepLabel">Step 1 of 5</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SCREEN: TYPING TRAINER (Stage 6 scaffold)
+════════════════════════════════════════════════════ -->
+<div id="s-typing" class="screen">
+  <div class="tscreen">
+    <div class="thead">
+      <div><div class="ttitle">⌨️ Typing Trainer</div><div class="tsub">Build speed, accuracy &amp; muscle memory</div></div>
+      <div class="brow">
+        <button class="btn btn-gh" onclick="resetTyping()">↺ Reset</button>
+        <button class="btn btn-cy" onclick="startTyping()">▶ Start</button>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="sbox hl"><div class="stat-num" id="wpmStat">0</div><div class="slbl">WPM</div></div>
+      <div class="sbox hl"><div class="stat-num" id="accStat">100%</div><div class="slbl">Accuracy</div></div>
+      <div class="sbox"><div class="stat-num" id="timeStat">0s</div><div class="slbl">Time</div></div>
+      <div class="sbox"><div class="stat-num" id="bestStat">0</div><div class="slbl">Best WPM</div></div>
+      <div class="sbox"><div class="stat-num" id="corStat">0</div><div class="slbl">Correct</div></div>
+    </div>
+    <div class="kb-wrap">
+      <div class="kb-row" id="kbRow0"></div>
+      <div class="kb-row" id="kbRow1"></div>
+      <div class="kb-row" id="kbRow2"></div>
+      <div class="kb-row" id="kbRow3"></div>
+      <div class="kb-row" id="kbRow4"></div>
+      <div class="kb-legend">
+        <div class="kbl"><div class="kbd" style="background:var(--cyan)"></div>Next key</div>
+        <div class="kbl"><div class="kbd" style="background:#2EC4B6"></div>Correct</div>
+        <div class="kbl"><div class="kbd" style="background:var(--coral)"></div>Wrong</div>
+        <div class="kbl"><div class="kbd" style="background:var(--amber);height:3px;border-radius:0;margin-top:3px"></div>Home row</div>
+      </div>
+    </div>
+    <div class="typing-prompt" id="typingPrompt" onclick="focusTyping()"></div>
+    <input class="typing-hidden" id="typingHidden" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div class="level-controls" style="margin-top:14px">
+      <span style="font-size:13px;font-weight:700;color:var(--muted)">Level:</span>
+      <div class="level-pills">
+        <div class="lp on" onclick="setTypingLevel(this,'home')">Home Row</div>
+        <div class="lp" onclick="setTypingLevel(this,'alpha')">All Letters</div>
+        <div class="lp" onclick="setTypingLevel(this,'words')">Common Words</div>
+        <div class="lp" onclick="setTypingLevel(this,'code')">Code Snippets</div>
+        <div class="lp" onclick="setTypingLevel(this,'speed')">Speed Run</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SCREEN: AI LAB (scaffold — wired by ai-lab.js)
+════════════════════════════════════════════════════ -->
+<div id="s-ai" class="screen">
+  <div style="max-width:840px;margin:0 auto;padding:28px 18px">
+    <div style="text-align:center;margin-bottom:26px">
+      <h2 style="font-family:'Fredoka One',cursive;font-size:29px;color:var(--navy)">🤖 AI Lab</h2>
+      <p style="font-size:14px;color:var(--muted);margin-top:5px;font-weight:500">Your coding thinking partner — it helps you work things out, not do it for you.</p>
+    </div>
+    <div style="background:var(--slate);border-radius:var(--r-lg);padding:32px;text-align:center;border:1.5px dashed var(--border)">
+      <div style="font-size:40px;margin-bottom:12px">🔧</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--navy);margin-bottom:8px">Coming in Stage 7</div>
+      <p style="font-size:14px;color:var(--muted);font-weight:500">The full AI Lab with Code Helper, Code Detective, and Prompt Trainer will be built in Stage 7 of the dev guide.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SCREEN: TIP JAR
+════════════════════════════════════════════════════ -->
+<div id="s-tipjar" class="screen">
+  <div style="max-width:660px;margin:0 auto;padding:38px 18px">
+    <div style="text-align:center;margin-bottom:32px">
+      <span style="font-size:54px;display:block;margin-bottom:11px">☕</span>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:32px;color:var(--navy);margin-bottom:7px">Support TekkieStack</h2>
+      <p style="font-size:14px;color:var(--muted);line-height:1.65;font-weight:500">TekkieStack is free for every child. If you're a parent, teacher, or supporter — every contribution makes a real difference.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div class="card" style="text-align:center">
+        <span style="font-size:34px;display:block;margin-bottom:11px">💳</span>
+        <div style="font-family:'Fredoka One',cursive;font-size:19px;color:var(--navy);margin-bottom:5px">Card &amp; Apple Pay</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;font-weight:500">Secure via SumUp. Supports credit/debit cards and Apple Pay.</p>
+        <a href="https://pay.sumup.com/b2c/QWQNKB45" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(135deg,#00A896,#00C9B1);color:#fff;font-family:'Fredoka One',cursive;font-size:17px;padding:15px 26px;border-radius:11px;text-decoration:none">💳 Pay with Card / Apple Pay</a>
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-top:7px">🍎 Apple Pay on eligible devices</div>
+        <div style="font-size:12px;color:var(--amber2);font-weight:700;margin-top:6px">⚡ Requires internet connection</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <span style="font-size:34px;display:block;margin-bottom:11px">₿</span>
+        <div style="font-family:'Fredoka One',cursive;font-size:19px;color:var(--navy);margin-bottom:5px">Bitcoin</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;font-weight:500">Send BTC directly to our wallet. Scan the QR or copy the address.</p>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap">
+          <canvas id="btcQrCanvas" width="88" height="88" style="border-radius:8px;border:2px solid var(--border)"></canvas>
+          <div style="flex:1;min-width:160px">
+            <div style="background:var(--slate);border-radius:9px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink);word-break:break-all;display:flex;align-items:center;gap:8px;margin-bottom:7px">
+              <span id="btcAddr" style="flex:1">bc1qm02une0vpcy86u3u5wmkegke0jf97rt8zsgstj</span>
+              <button onclick="copyBTC()" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:13px">📋</button>
+            </div>
+            <div id="btcCopyToast" style="font-size:12px;color:var(--green);font-weight:700;min-height:15px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="background:linear-gradient(130deg,var(--navy),var(--navy2));border:none;text-align:center">
+      <span style="font-size:34px;display:block;margin-bottom:11px">🙏</span>
+      <div style="font-family:'Fredoka One',cursive;font-size:19px;color:#fff;margin-bottom:5px">Every contribution matters</div>
+      <p style="font-size:13px;color:rgba(255,255,255,.6);font-weight:500">Tekkiestack is built by educators and developers who believe every child deserves world-class coding education — regardless of background or income. Your support funds new lessons, AI features, and offline capability for kids everywhere.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SCREEN: SUPPORT (scaffold)
+════════════════════════════════════════════════════ -->
+<div id="s-support" class="screen">
+  <div style="max-width:740px;margin:0 auto;padding:30px 18px">
+    <div style="text-align:center;margin-bottom:24px">
+      <h2 style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--navy)">💬 Help &amp; Support</h2>
+      <p style="font-size:14px;color:var(--muted);margin-top:5px;font-weight:500">Chat with our AI support assistant or log a technical issue.</p>
+    </div>
+    <div style="background:var(--slate);border-radius:var(--r-lg);padding:32px;text-align:center;border:1.5px dashed var(--border)">
+      <div style="font-size:40px;margin-bottom:12px">🔧</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--navy);margin-bottom:8px">Full Support Chat — Stage 8</div>
+      <p style="font-size:14px;color:var(--muted);font-weight:500">The full support chat with EmailJS integration will be built in Stage 8.</p>
+      <div style="margin-top:16px">
+        <button class="btn btn-nv" onclick="go('support')" style="display:inline-flex">📬 Go to Support</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SCREEN: ONBOARDING (Stage 3)
+════════════════════════════════════════════════════ -->
+<div id="s-onboard" class="screen">
+  <div class="ob-screen">
+    <div id="ob1" class="ob-card">
+      <div class="ob-step">Step 1 of 6 — Create Profile</div>
+      <div style="font-size:58px;margin-bottom:11px">👋</div>
+      <div class="ob-title">Welcome to TekkieStack!</div>
+      <div class="ob-desc">You're about to start learning to build with code. Let's set up your profile.</div>
+      <input class="ob-input" id="obName" placeholder="Your first name..." oninput="document.getElementById('obNamePreview').textContent=this.value?'Hi '+this.value+'! Great to meet you 👋':''">
+      <div id="obNamePreview" style="font-size:14px;color:var(--cyan2);font-weight:700;margin-bottom:14px;min-height:20px"></div>
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:9px;text-align:left">Choose your avatar</div>
+      <div class="avatar-grid">
+        <button class="av-btn sel" onclick="selectAvatar(this,'🚀')">🚀</button>
+        <button class="av-btn" onclick="selectAvatar(this,'⚡')">⚡</button>
+        <button class="av-btn" onclick="selectAvatar(this,'🎮')">🎮</button>
+        <button class="av-btn" onclick="selectAvatar(this,'🌟')">🌟</button>
+        <button class="av-btn" onclick="selectAvatar(this,'🦁')">🦁</button>
+        <button class="av-btn" onclick="selectAvatar(this,'🐉')">🐉</button>
+        <button class="av-btn" onclick="selectAvatar(this,'🦊')">🦊</button>
+        <button class="av-btn" onclick="selectAvatar(this,'🎨')">🎨</button>
+        <button class="av-btn" onclick="selectAvatar(this,'🔥')">🔥</button>
+        <button class="av-btn" onclick="selectAvatar(this,'🧠')">🧠</button>
+      </div>
+      <button class="btn btn-cy btn-full" onclick="obStep(2)">Continue →</button>
+    </div>
+    <div id="ob2" class="ob-card" style="display:none">
+      <div class="ob-step">Step 2 of 6 — Year Group</div>
+      <div style="font-size:58px;margin-bottom:11px">📚</div>
+      <div class="ob-title">What year are you in?</div>
+      <div class="ob-desc">This sets your learning journey — Junior (Y3–6) or Senior (Y7–11+).</div>
+      <div class="year-grid">
+        <button class="yr-btn" onclick="selectYear(this,3)">Y3</button>
+        <button class="yr-btn" onclick="selectYear(this,4)">Y4</button>
+        <button class="yr-btn" onclick="selectYear(this,5)">Y5</button>
+        <button class="yr-btn" onclick="selectYear(this,6)">Y6</button>
+        <button class="yr-btn" onclick="selectYear(this,7)">Y7</button>
+        <button class="yr-btn" onclick="selectYear(this,8)">Y8</button>
+        <button class="yr-btn" onclick="selectYear(this,9)">Y9</button>
+        <button class="yr-btn" onclick="selectYear(this,10)">Y10</button>
+        <button class="yr-btn" onclick="selectYear(this,11)">Y11</button>
+        <button class="yr-btn" onclick="selectYear(this,12)">Y12+</button>
+      </div>
+      <button class="btn btn-cy btn-full" id="ob2Btn" disabled onclick="obStep(3)">Continue →</button>
+    </div>
+    <div id="ob3" class="ob-card" style="display:none">
+      <div class="ob-step">Step 3 of 6 — Set PIN</div>
+      <div style="font-size:58px;margin-bottom:11px">🔐</div>
+      <div class="ob-title">Choose your secret PIN</div>
+      <div class="ob-desc">A 4-digit PIN keeps your profile private on a shared device.</div>
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:9px">Enter PIN</div>
+      <div class="pin-setup-row">
+        <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin0" oninput="onPinInput(0)">
+        <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin1" oninput="onPinInput(1)">
+        <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin2" oninput="onPinInput(2)">
+        <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin3" oninput="onPinInput(3)">
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:9px">Confirm PIN</div>
+      <div class="pin-setup-row">
+        <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin4" oninput="onPinInput(4)">
+        <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin5" oninput="onPinInput(5)">
+        <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin6" oninput="onPinInput(6)">
+        <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin7" oninput="onPinInput(7)">
+      </div>
+      <div id="pinSetErr" style="font-size:13px;color:var(--coral);font-weight:600;min-height:17px;margin-bottom:11px"></div>
+      <button class="btn btn-cy btn-full" id="ob3Btn" disabled onclick="obStep(4)">Set PIN &amp; Continue →</button>
+    </div>
+    <div id="ob4" class="ob-card" style="display:none">
+      <div class="ob-step">Step 4 of 6 — Starter Build</div>
+      <div style="font-size:58px;margin-bottom:9px">✨</div>
+      <div class="ob-title">Build your first web page!</div>
+      <div class="ob-desc">Replace ___ with your name and watch it appear live.</div>
+      <div class="live-indicator"><div class="live-dot"></div>Live preview</div>
+      <div class="starter-editor">
+        <div class="starter-bar">
+          <div class="st-dot" style="background:#FF5F57"></div>
+          <div class="st-dot" style="background:#FEBC2E"></div>
+          <div class="st-dot" style="background:#28C840"></div>
+        </div>
+        <input class="starter-input" id="starterInput" value="<h1>My name is ___</h1>" oninput="starterPreview()">
+      </div>
+      <div class="starter-preview" id="starterPreview"><span style="color:var(--muted);font-size:14px;font-family:'DM Sans',sans-serif">Replace ___ above to see it appear...</span></div>
+      <button class="btn btn-cy btn-full" id="ob4Btn" disabled onclick="obStep(5)">I did it! →</button>
+    </div>
+    <div id="ob5" class="ob-card" style="display:none">
+      <div style="font-size:70px;display:block;margin-bottom:12px;animation:bnc .55s ease">🎉</div>
+      <div class="ob-title">You're a builder!</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:14px;line-height:1.55;font-weight:500">You just wrote your first real web page. That's HTML — the language every website in the world is built with.</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:26px;color:var(--cyan);margin-bottom:20px">+25 XP earned!</div>
+      <button class="btn btn-cy btn-full" onclick="finishOnboarding()">Go to my Dashboard →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     LEGAL SCREENS (Privacy, Terms, Cookies)
+════════════════════════════════════════════════════ -->
+<div id="s-privacy" class="screen">
+  <div class="legal-screen">
+    <div class="legal-hero">
+      <div class="legal-badge">📄 Legal Document</div>
+      <h1>Privacy Policy</h1>
+      <p class="legal-date">Last updated: March 2026 · Effective: March 2026</p>
+    </div>
+    <div class="legal-highlight"><p><strong>Plain-English summary:</strong> TekkieStack is designed for children. We collect the bare minimum data needed to make it work. Nothing is sold. Nothing is shared with advertisers. All learner data stays on your own device — we never see it.</p></div>
+    <div class="legal-toc">
+      <div class="legal-toc-title">Contents</div>
+      <a href="#priv-1">1. Who We Are</a>
+      <a href="#priv-2">2. Data We Store Locally</a>
+      <a href="#priv-3">3. Data Sent to Third Parties</a>
+      <a href="#priv-4">4. Children's Privacy</a>
+      <a href="#priv-5">5. Your Rights</a>
+      <a href="#priv-6">6. Contact</a>
+    </div>
+    <div class="legal-section">
+      <h2 id="priv-1">1. Who We Are</h2>
+      <p>TekkieStack is a product of <strong>Aperintel Ltd</strong>, registered in England and Wales. "We", "us", or "our" refers to Aperintel Ltd. Please use our contact form in the Help &amp; Support section to reach us.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="priv-2">2. Data We Store Locally on Your Device</h2>
+      <p>All of the following is stored <strong>only on the device you use</strong> — in the browser's IndexedDB storage. It is never transmitted to Aperintel Ltd or any server.</p>
+      <ul>
+        <li>First name and chosen avatar emoji</li>
+        <li>Year group (e.g. Year 5)</li>
+        <li>A hashed PIN (we store a one-way hash, never the PIN itself)</li>
+        <li>Learning progress — lessons completed, phases, XP points, badges</li>
+        <li>Code projects saved in the editor</li>
+        <li>Typing stats — words per minute, session count</li>
+        <li>Streak and daily challenge history</li>
+      </ul>
+      <p>We do <strong>not</strong> collect: full names, email addresses, phone numbers, school names, location, photographs, biometric data, or any behavioural tracking data.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="priv-3">3. Data Sent to Third Parties</h2>
+      <h3>Anthropic (AI Lab — Y5+ only, disabled by default)</h3>
+      <p>When the optional online AI Lab is enabled for Year 5+ learners, the text of the coding question is sent to Anthropic's API. Before sending, our safety layer strips all personal information. The learner's name, year group, device ID, and school are never included in API calls. Anthropic's privacy policy: <strong>anthropic.com/privacy</strong></p>
+      <h3>EmailJS (Support contact form)</h3>
+      <p>When you submit the support form, your message and optional name are routed securely to the Aperintel support team. No profile data or learning progress is included. EmailJS privacy policy: <strong>emailjs.com/legal/privacy-policy</strong></p>
+      <h3>Google Fonts</h3>
+      <p>The app loads fonts from fonts.googleapis.com. Google's servers receive a standard HTTP request that includes your IP address and browser type — this is normal for any website that uses Google Fonts. No cookies are set. You can disable Google Fonts on the Cookie &amp; Storage Policy page to use system fonts instead.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="priv-4">4. Children's Privacy</h2>
+      <div class="legal-highlight"><p>TekkieStack is built specifically for children. Children's data protection is a foundational design principle, not an afterthought.</p></div>
+      <ul>
+        <li><strong>UK GDPR &amp; Children's Code:</strong> We comply with the UK GDPR and the ICO's Age Appropriate Design Code (Children's Code).</li>
+        <li><strong>Data minimisation:</strong> We collect only what is necessary for the product to function.</li>
+        <li><strong>No profiling:</strong> We do not profile children, run advertising, or make automated decisions about learners.</li>
+        <li><strong>No social features:</strong> There are no public profiles, no peer comparisons, and no sharing of learner data between devices.</li>
+        <li><strong>AI safety:</strong> Year 3–4 children cannot access the online AI at all. Year 5+ can only access it when a parent or teacher enables it, and personal information is always stripped before queries are sent.</li>
+        <li><strong>COPPA:</strong> TekkieStack does not collect personal information from children on any server, so COPPA's operator requirements do not apply in Release 1.</li>
+      </ul>
+    </div>
+    <div class="legal-section">
+      <h2 id="priv-5">5. Your Rights</h2>
+      <p>Because all learner data is stored locally on your device, you are the data controller of that information. You can exercise full control at any time:</p>
+      <ul>
+        <li><strong>Access:</strong> All data is visible within the Guardian View feature.</li>
+        <li><strong>Deletion:</strong> Use the "Clear All My TekkieStack Data" button on the Cookie &amp; Storage Policy page, or clear site data in your browser settings. Deletion is immediate and complete.</li>
+        <li><strong>Portability:</strong> The Portfolio Generator exports your data as a downloadable HTML file.</li>
+      </ul>
+      <p>For data sent to third parties (support emails), please use the contact form in the Help &amp; Support section.</p>
+    </div>
+    <div class="legal-contact-card">
+      <h3>Contact Aperintel Ltd</h3>
+      <p>For all privacy questions and data protection enquiries:</p>
+      <span style="color:var(--cyan);font-weight:700">Use the Help &amp; Support contact form</span>
+    </div>
+  </div>
+</div>
+
+<div id="s-terms" class="screen">
+  <div class="legal-screen">
+    <div class="legal-hero">
+      <div class="legal-badge">📋 Legal Document</div>
+      <h1>Terms of Use</h1>
+      <p class="legal-date">Last updated: March 2026 · Effective: March 2026</p>
+    </div>
+    <div class="legal-highlight"><p><strong>Plain-English summary:</strong> TekkieStack is free for personal and educational use. Don't misuse it or try to copy and republish it. Parents and teachers are responsible for supervising children's use.</p></div>
+    <div class="legal-toc">
+      <div class="legal-toc-title">Contents</div>
+      <a href="#terms-1">1. Acceptance</a>
+      <a href="#terms-2">2. Who Can Use TekkieStack</a>
+      <a href="#terms-3">3. Acceptable Use</a>
+      <a href="#terms-4">4. Parental and Teacher Responsibility</a>
+      <a href="#terms-5">5. Intellectual Property</a>
+      <a href="#terms-6">6. Disclaimer of Warranties</a>
+      <a href="#terms-7">7. Limitation of Liability</a>
+      <a href="#terms-8">8. Changes to These Terms</a>
+      <a href="#terms-9">9. Governing Law</a>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-1">1. Acceptance of Terms</h2>
+      <p>By accessing or using TekkieStack, you agree to be bound by these Terms of Use. If you allow a child to use TekkieStack, you accept these Terms on their behalf. If you do not agree, please do not use the platform.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-2">2. Who Can Use TekkieStack</h2>
+      <p>TekkieStack is designed for children aged 7–16 (Year 3–11) under the supervision of a parent, guardian, or teacher. Adults may also use the platform for personal learning. Commercial use requires a separate written agreement with Aperintel Ltd — please reach out via the Help &amp; Support contact form.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-3">3. Acceptable Use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Attempt to bypass, circumvent, or disable the AI safety filters or age restrictions</li>
+        <li>Use the AI Lab to generate content unrelated to coding, or to produce harmful, offensive, or inappropriate content</li>
+        <li>Introduce malicious code, scripts, or content into the platform</li>
+        <li>Reverse-engineer, decompile, or disassemble any part of TekkieStack for the purpose of creating a competing product or redistributing the code</li>
+        <li>Host a public copy of TekkieStack under a different domain or brand name without written permission from Aperintel Ltd</li>
+        <li>Remove, obscure, or alter copyright notices, attributions, or Aperintel Ltd branding within the application</li>
+        <li>Use TekkieStack in any way that violates applicable laws or regulations</li>
+      </ul>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-4">4. Parental and Teacher Responsibility</h2>
+      <p>TekkieStack is not a childcare or supervision service. Parents and guardians are responsible for supervising their children's use of the platform and for ensuring it is appropriate for their individual child's needs. Teachers are responsible for appropriate classroom deployment in line with their school's safeguarding and digital use policies.</p>
+      <div class="legal-warn"><p>The optional online AI Lab feature (Year 5+, disabled by default) should only be enabled by a parent or teacher who has reviewed the AI Safety section of the Privacy Policy and is comfortable with how it works.</p></div>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-5">5. Intellectual Property</h2>
+      <p>All source code, design, curriculum content, lesson materials, AI prompts, branding, and documentation are the intellectual property of Aperintel Ltd and are protected by copyright law. Nothing in these Terms grants you any right to use Aperintel Ltd's intellectual property except as expressly permitted.</p>
+      <p><strong>Your content:</strong> You retain ownership of all code projects you create within the platform. Aperintel Ltd makes no claim over learner-generated content.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-6">6. Disclaimer of Warranties</h2>
+      <p>TekkieStack is provided "as is" and "as available" without warranties of any kind, express or implied. Aperintel Ltd does not warrant that the platform will be uninterrupted, error-free, or free of viruses or other harmful components. The platform is provided for educational purposes and is not a substitute for professional educational assessment or curriculum delivery.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-7">7. Limitation of Liability</h2>
+      <p>To the fullest extent permitted by applicable law, Aperintel Ltd shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of data, arising from your use of or inability to use TekkieStack. Aperintel Ltd's total liability for any claims shall not exceed £100.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-8">8. Changes to These Terms</h2>
+      <p>We may update these Terms from time to time. The "Last updated" date at the top of this page will reflect any changes. Continued use of TekkieStack after changes are posted constitutes your acceptance of the updated Terms.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="terms-9">9. Governing Law</h2>
+      <p>These Terms are governed by and construed in accordance with the laws of England and Wales. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
+    </div>
+    <div class="legal-contact-card">
+      <h3>Legal Enquiries</h3>
+      <p>For licensing, commercial use, or legal questions:</p>
+      <span style="color:var(--cyan);font-weight:700">Use the Help &amp; Support contact form</span>
+    </div>
+  </div>
+</div>
+
+<div id="s-cookies" class="screen">
+  <div class="legal-screen">
+    <div class="legal-hero">
+      <div class="legal-badge">🍪 Legal Document</div>
+      <h1>Cookie &amp; Storage Policy</h1>
+      <p class="legal-date">Last updated: March 2026 · Effective: March 2026</p>
+    </div>
+    <div class="legal-highlight"><p><strong>Plain-English summary:</strong> We use <strong>zero cookies</strong>. We use browser storage to save your learning progress locally on your device. You can delete everything at any time with one button. No tracking, no ads, no data sent to us.</p></div>
+    <div class="legal-toc">
+      <div class="legal-toc-title">Contents</div>
+      <a href="#cook-1">1. No Cookies</a>
+      <a href="#cook-2">2. Browser Storage We Use</a>
+      <a href="#cook-3">3. Third-Party Storage</a>
+      <a href="#cook-4">4. Your Controls</a>
+      <a href="#cook-5">5. Browser-Specific Instructions</a>
+    </div>
+    <div class="legal-section">
+      <h2 id="cook-1">1. We Use No Cookies</h2>
+      <p>TekkieStack does not set any cookie files on your device — not session cookies, not persistent cookies, not tracking cookies, not advertising cookies. If you inspect your browser's cookie store for this site, it will be empty.</p>
+      <p>The "cookie banner" you see when you first visit is required by UK and EU law for any site that uses browser storage. We show it to be transparent about the storage we do use, even though it is not technically cookies.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="cook-2">2. Browser Storage We Use</h2>
+      <h3>IndexedDB — Learning data</h3>
+      <p>Purpose: stores your learner profiles, lesson progress, XP, badges, code projects, typing stats, and automatic backups. This is the primary data store for TekkieStack.</p>
+      <p>Database name: <code style="background:var(--slate);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:13px">tekkiestack</code> · Schema version 5 · Stays on your device · Never transmitted</p>
+      <h3>localStorage — Preferences</h3>
+      <p>Purpose: stores a small number of lightweight flags — whether you have accepted this cookie notice (<code style="background:var(--slate);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:13px">ts_cookie_ok</code>), your device ID used for PIN hashing (<code style="background:var(--slate);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:13px">ts_device_id</code>), and whether you've dismissed the app install prompt. Contains no personal information about the learner.</p>
+      <h3>Cache API — Offline shell</h3>
+      <p>Purpose: caches the app's HTML, CSS, JavaScript, and fonts so that TekkieStack works with no internet connection after the first load. Cache name: <code style="background:var(--slate);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:13px">ts-v2</code>. Contains only application files — no user data.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="cook-3">3. Third-Party Storage</h2>
+      <p>TekkieStack loads Google Fonts from fonts.googleapis.com. Google may set its own cache entries in your browser as part of the font delivery. We have no control over Google's caching behaviour. You can disable Google Fonts on this page (see controls below) to prevent any Google network requests.</p>
+      <p>When the optional online AI Lab is in use, the Anthropic API is called directly from your browser. Anthropic does not set any storage on your device.</p>
+    </div>
+    <div class="legal-section">
+      <h2 id="cook-4">4. Your Controls</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+        <div class="card" style="padding:16px">
+          <div style="font-weight:700;color:var(--navy);margin-bottom:6px;font-size:14px">🔤 Google Fonts</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:500">Disable to prevent Google network requests. App uses system fonts instead.</div>
+          <label style="display:flex;align-items:center;gap:9px;cursor:pointer">
+            <input type="checkbox" id="toggleFonts" checked onchange="toggleGoogleFonts(this.checked)" style="width:18px;height:18px;cursor:pointer">
+            <span style="font-size:13px;font-weight:700;color:var(--navy)">Google Fonts enabled</span>
+          </label>
+        </div>
+        <div class="card" style="padding:16px">
+          <div style="font-weight:700;color:var(--navy);margin-bottom:6px;font-size:14px">🤖 Online AI (Y5+)</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:500">Disabled by default. Enable per-profile by a parent or teacher.</div>
+          <label style="display:flex;align-items:center;gap:9px;cursor:pointer">
+            <input type="checkbox" id="toggleAI" onchange="toggleOnlineAI(this.checked)" style="width:18px;height:18px;cursor:pointer">
+            <span style="font-size:13px;font-weight:700;color:var(--navy)">Online AI enabled</span>
+          </label>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:8px">
+        <button class="btn btn-co" onclick="clearAllData()" style="margin:0 auto">
+          🗑 Clear All My TekkieStack Data
+        </button>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;font-weight:500">Permanently deletes all profiles, projects, progress, and backups on this device. Cannot be undone.</p>
+      </div>
+    </div>
+    <div class="legal-section">
+      <h2 id="cook-5">5. How to Clear Data in Your Browser</h2>
+      <p>You can also clear TekkieStack's storage directly from your browser:</p>
+      <ul>
+        <li><strong>Chrome / Edge:</strong> Settings → Privacy and security → Site settings → View permissions and data stored across sites → Search for this site → Delete</li>
+        <li><strong>Safari (Mac):</strong> Develop menu → Web Application → IndexedDB; or Settings → Privacy → Manage Website Data</li>
+        <li><strong>Safari (iPhone/iPad):</strong> Settings → Safari → Advanced → Website Data → Edit → find this site → Delete</li>
+        <li><strong>Firefox:</strong> Settings → Privacy &amp; Security → Cookies and Site Data → Manage Data → search for this site → Remove</li>
+      </ul>
+    </div>
+    <div class="legal-contact-card">
+      <h3>Storage &amp; Privacy Enquiries</h3>
+      <p>Questions about what data is stored or how to delete it:</p>
+      <span style="color:var(--cyan);font-weight:700">Use the Help &amp; Support contact form</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     COOKIE BANNER
+════════════════════════════════════════════════════ -->
+<div class="cookie-banner hidden" id="cookieBanner">
+  <p>We use browser storage (not cookies) to save your learning progress locally. No tracking, no ads. <a onclick="go('cookies')">Cookie &amp; Storage Policy</a></p>
+  <div class="cookie-banner-btns">
+    <button class="btn btn-gh" style="font-size:12px;padding:7px 14px;color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2)" onclick="go('cookies')">Manage</button>
+    <button class="btn btn-cy" style="font-size:12px;padding:7px 14px" onclick="acceptCookies()">Got it ✓</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SITE FOOTER
+════════════════════════════════════════════════════ -->
+</main>
+
+<!-- ── PWA Install Banner (Stage 15) ───────────────────────────────────── -->
+<div class="pwa-banner hidden" id="pwaBanner" role="complementary" aria-label="Install app">
+  <div style="font-size:28px">📱</div>
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">Install TekkieStack</div>
+    <div class="pwa-banner-sub">Works offline · No app store needed</div>
+  </div>
+  <button class="btn btn-cy" style="font-size:12px;padding:8px 14px;flex-shrink:0" onclick="installPWA()">Install</button>
+  <button onclick="dismissInstallBanner()" aria-label="Dismiss install prompt" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;padding:4px 6px;flex-shrink:0">✕</button>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-main">
+    <div class="footer-col footer-col-brand">
+      <div class="footer-logo-wrap">
+        <img src="assets/img/logo.png" class="footer-logo-img" alt="TekkieStack">
+        <span class="footer-brand-name">Tekkie<span>stack</span></span>
+      </div>
+      <p class="footer-tagline">Coding education for children Year 3–11. Browser-native, offline-first, and free for every learner.</p>
+      <p class="footer-aperintel">© 2026 Aperintel. All rights reserved. Tekkiestack is a product of Aperintel.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Learn</h4>
+      <a onclick="need('dashboard')">Dashboard</a>
+      <a onclick="need('junior')">Junior Journey</a>
+      <a onclick="need('senior')">Senior Journey</a>
+      <a onclick="need('typing')">Typing Trainer</a>
+      <a onclick="need('editor')">Code Editor</a>
+      <a onclick="need('ai')">AI Lab</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a onclick="go('support')">Help &amp; Support</a>
+      <a onclick="go('tipjar')">Support Us ☕</a>
+      <a onclick="go('support')">Contact Us</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a onclick="go('privacy')">Privacy Policy</a>
+      <a onclick="go('terms')">Terms of Use</a>
+      <a onclick="go('cookies')">Cookie Policy</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy-text" id="footerCopy"></span>
+    <div class="footer-legal-links">
+      <a onclick="go('privacy')">Privacy</a>
+      <a onclick="go('terms')">Terms</a>
+      <a onclick="go('cookies')">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ════════════════════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════════════════ -->
+<script src="assets/js/security.js"></script>
+<script src="assets/js/storage.js"></script>
+<script src="assets/js/session.js"></script>
+<script src="assets/js/xp.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="modules/code-editor.js"></script>
+<script src="modules/typing-trainer.js"></script>
+<script src="modules/ai-lab.js"></script>
+<script src="modules/support-chat.js"></script>
+<script src="modules/junior-phases.js"></script>
+<script src="modules/senior-phases.js"></script>
+<script src="modules/engagement.js"></script>
+
+<script>
+// ── Onboarding state ────────────────────────────────────────────────────
+let _obAvatar = '🚀';
+let _obYear   = null;
+// _pinVals is declared as let so resetOnboarding can reassign it
+let _pinVals = Array(8).fill('');
+
+/**
+ * Reset all onboarding form state to defaults and show step 1.
+ * Called whenever the onboarding screen opens, to prevent
+ * stale state from a previous run creating a duplicate profile.
+ */
+function resetOnboarding() {
+  _obAvatar = '🚀';
+  _obYear   = null;
+  _pinVals  = Array(8).fill('');
+
+  // Reset name field
+  const nameEl = document.getElementById('obName');
+  if (nameEl) nameEl.value = '';
+  const namePreview = document.getElementById('obNamePreview');
+  if (namePreview) namePreview.textContent = '';
+
+  // Reset avatar selection
+  document.querySelectorAll('.av-btn').forEach(b => b.classList.remove('sel'));
+  const firstAv = document.querySelector('.av-btn');
+  if (firstAv) firstAv.classList.add('sel');
+
+  // Reset year selection
+  document.querySelectorAll('.yr-btn').forEach(b => b.classList.remove('sel'));
+  const ob2Btn = document.getElementById('ob2Btn');
+  if (ob2Btn) ob2Btn.disabled = true;
+
+  // Reset PIN fields
+  for (let i = 0; i < 8; i++) {
+    const pinEl = document.getElementById('pin' + i);
+    if (pinEl) pinEl.value = '';
+  }
+  const pinErr = document.getElementById('pinSetErr');
+  if (pinErr) pinErr.textContent = '';
+  const ob3Btn = document.getElementById('ob3Btn');
+  if (ob3Btn) ob3Btn.disabled = true;
+
+  // Reset starter editor
+  const starterEl = document.getElementById('starterInput');
+  if (starterEl) starterEl.value = "<h1>My name is ___</h1>";
+  const starterPr = document.getElementById('starterPreview');
+  if (starterPr) starterPr.innerHTML = '<span style="color:var(--muted);font-size:14px;font-family:\'DM Sans\',sans-serif">Replace ___ above to see it appear...</span>';
+  const ob4Btn = document.getElementById('ob4Btn');
+  if (ob4Btn) ob4Btn.disabled = true;
+
+  // Always start at step 1
+  obStep(1);
+}
+
+function obStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('ob'+i);
+    if (el) el.style.display = i === n ? 'block' : 'none';
+  }
+}
+function selectAvatar(el, em) {
+  document.querySelectorAll('.av-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel'); _obAvatar = em;
+}
+function selectYear(el, y) {
+  document.querySelectorAll('.yr-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel'); _obYear = y;
+  document.getElementById('ob2Btn').disabled = false;
+}
+function onPinInput(i) {
+  const el = document.getElementById('pin'+i);
+  _pinVals[i] = el.value.replace(/\D/,''); el.value = _pinVals[i];
+  if (_pinVals[i] && i < 7) document.getElementById('pin'+(i+1)).focus();
+  const p1 = _pinVals.slice(0,4).join(''), p2 = _pinVals.slice(4,8).join('');
+  const err = document.getElementById('pinSetErr');
+  if (p1.length === 4 && p2.length === 4) {
+    if (p1 === p2) { err.textContent = ''; document.getElementById('ob3Btn').disabled = false; }
+    else { err.textContent = "PINs don't match — try again"; document.getElementById('ob3Btn').disabled = true; }
+  } else { document.getElementById('ob3Btn').disabled = true; }
+}
+function starterPreview() {
+  const v = document.getElementById('starterInput').value;
+  const m = v.match(/<h1>(.*?)<\/h1>/i);
+  const pr = document.getElementById('starterPreview');
+  if (m && m[1] && !m[1].includes('___')) {
+    pr.innerHTML = '<strong>'+m[1]+'</strong>';
+    document.getElementById('ob4Btn').disabled = false;
+  } else {
+    pr.innerHTML = '<span style="color:var(--muted);font-size:14px;font-family:\'DM Sans\',sans-serif">Replace ___ above to see it appear...</span>';
+    document.getElementById('ob4Btn').disabled = true;
+  }
+}
+async function finishOnboarding() {
+  // Sanitise name via security module
+  const rawName = document.getElementById('obName').value || 'Builder';
+  const nameCheck = window.TSASecurity ? TSASecurity.sanitiseName(rawName) : { ok: true, value: rawName, error: '' };
+  if (!nameCheck.ok) {
+    alert(nameCheck.error);
+    return;
+  }
+  const sanitisedName = nameCheck.value;
+
+  // Validate PIN
+  const pin = _pinVals.slice(0,4).join('') || '0000';
+  const pinCheck = window.TSASecurity ? TSASecurity.validatePIN(pin) : { ok: true, error: '' };
+  if (!pinCheck.ok) {
+    alert(pinCheck.error);
+    return;
+  }
+  try {
+    const profile = await TSA.services.sessionManager.createProfile({
+      name: sanitisedName, avatar: _obAvatar, yearGroup: _obYear || 3, pin
+    });
+    await TSA.services.sessionManager.startSession(profile.profileId, pin);
+    await TSA.services.xp.addXP('FIRST_BUILD');
+    _showSessionUI({ ...profile, xp: 25 });
+    celebrate('🎉', 'Welcome, '+sanitisedName+'!', 'Your journey starts now!', '+25 XP');
+    go('dashboard');
+    _renderDashboard({ ...profile, name: sanitisedName });
+    renderPicker();
+  } catch(e) {
+    alert('Could not create profile: ' + e.message);
+  }
+}
+
+// ── Bitcoin QR ──────────────────────────────────────────────────────────
+function drawBtcQR() {
+  const canvas = document.getElementById('btcQrCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const BTC = 'bc1qm02une0vpcy86u3u5wmkegke0jf97rt8zsgstj';
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,88,88);
+  ctx.fillStyle = '#000000';
+  function sq(x,y,w,h,f='#000'){ctx.fillStyle=f;ctx.fillRect(x,y,w,h);}
+  sq(3,3,25,25); sq(6,6,19,19,'#fff'); sq(10,10,11,11);
+  sq(60,3,25,25); sq(63,6,19,19,'#fff'); sq(67,10,11,11);
+  sq(3,60,25,25); sq(6,63,19,19,'#fff'); sq(10,67,11,11);
+  let seed=0; for(const c of BTC)seed=(seed*31+c.charCodeAt(0))&0xFFFF;
+  function rnd(){seed=(seed*1664525+1013904223)&0xFFFFFFFF;return(seed>>>16)/65536;}
+  ctx.fillStyle='#000';
+  for(let r=0;r<20;r++)for(let c=0;c<20;c++){
+    const x=3+c*4,y=3+r*4;
+    if((x<32&&y<32)||(x>55&&y<32)||(x<32&&y>55))continue;
+    if(rnd()>.52)sq(x,y,3,3);
+  }
+}
+function copyBTC() {
+  navigator.clipboard.writeText('bc1qm02une0vpcy86u3u5wmkegke0jf97rt8zsgstj').then(()=>{
+    const t=document.getElementById('btcCopyToast');
+    t.textContent='✅ Address copied!';
+    setTimeout(()=>t.textContent='',2600);
+  });
+}
+
+// ── Clear data (cookie policy page) ─────────────────────────────────────
+async function clearAllData() {
+  if (!confirm('This will permanently delete ALL TekkieStack profiles, progress, and projects on this device. This cannot be undone. Are you sure?')) return;
+  await TSA.storage.clearAll();
+  alert('All data cleared. The page will now reload.');
+  location.reload();
+}
+
+// ── Code editor helpers ─────────────────────────────────────────────────
+function runCode() {
+  const code  = document.getElementById('codeInput')?.value;
+  const frame = document.getElementById('previewFrame');
+  if (!frame || !code) return;
+  const d = frame.contentDocument || frame.contentWindow.document;
+  d.open(); d.write(code); d.close();
+}
+
+function showHint() {
+  document.getElementById('hintBar').style.display = 'flex';
+  nextHint();
+}
+
+let _hintTier = 0;
+const HINTS = [
+  'Hint 1: Try changing the <code>background</code> colour in the CSS to something different.',
+  'Hint 2: Change <code>background: #0F1F3D;</code> to another hex colour like <code>#2D1B69</code>.',
+  'Hint 3 (answer): Replace the background value with any valid CSS colour — e.g. <code>background: navy;</code>'
+];
+function nextHint() {
+  const ht = document.getElementById('hintText');
+  const hb = document.getElementById('hintBtn');
+  if (!ht) return;
+  ht.innerHTML = HINTS[_hintTier % HINTS.length];
+  _hintTier++;
+  if (hb) hb.textContent = _hintTier >= HINTS.length ? '💡 All hints shown' : '💡 Hint';
+}
+
+async function markLessonDone() {
+  // Get the lesson that is currently loaded
+  const lessonId = window._currentLessonId;
+  if (!lessonId) {
+    console.warn('[Editor] markLessonDone: no current lesson set');
+    return;
   }
 
-  if (window.TSA) {
-    ensureScreen();
-    window.TSA.routes['senior'] = () => renderSeniorJourney();
+  const profile = await TSA.services.sessionManager.getActiveProfile();
+  if (!profile) { go('picker'); return; }
+
+  // --- Guard: only award XP and save progress once per lesson -----------
+  const prog = profile.phaseProgress || {};
+  const phaseKey = 'j2';  // Phase 2 — Build the Web
+  const phaseProg = prog[phaseKey] || { lessonsComplete: [], done: false };
+
+  if (phaseProg.lessonsComplete.includes(lessonId)) {
+    // Already done — just advance to next lesson without re-awarding XP
+    _advanceToNextLesson(lessonId, profile);
+    return;
   }
 
-  return { PHASES, checkGate, markLessonComplete, renderSeniorJourney, openPhase, openLesson, showGuardianView, generatePortfolio };
+  // --- Mark this lesson complete in profile ----------------------------
+  phaseProg.lessonsComplete.push(lessonId);
+
+  // Check if all 5 Phase 2 lessons are now complete
+  const allP2 = ['p2-l1','p2-l2','p2-l3','p2-l4','p2-l5'];
+  const allDone = allP2.every(id => phaseProg.lessonsComplete.includes(id));
+  if (allDone && !phaseProg.done) {
+    phaseProg.done = true;
+  }
+
+  const updatedProg = { ...prog, [phaseKey]: phaseProg };
+  await TSA.services.sessionManager.updateProfile(profile.profileId, { phaseProgress: updatedProg });
+
+  // --- Award XP (only once per lesson) ---------------------------------
+  const { newXp, newBadges } = await TSA.services.xp.addXP('LESSON_COMPLETE');
+
+  const lesson = window.TSACodeEditor?.LESSONS?.[lessonId];
+  const lessonTitle = lesson ? lesson.title.split(' — ')[1] || lesson.title : 'Lesson';
+
+  celebrate('🎉', 'Lesson Complete!', lessonTitle + ' mastered!', '+20 XP');
+
+  if (newBadges.length) {
+    const b = TSA.services.xp.getBadge(newBadges[0]);
+    setTimeout(() => celebrate(b.emoji, 'Badge Earned!', b.label, '+10 XP'), 2500);
+  }
+
+  // If all Phase 2 lessons done, show phase completion
+  if (allDone && phaseProg.done) {
+    setTimeout(() => celebrate('🌐', 'Phase 2 Complete!', 'Build the Web — all 5 lessons done!', '+100 XP'), 1800);
+  }
+
+  // --- Advance to next lesson after a short delay ----------------------
+  setTimeout(() => _advanceToNextLesson(lessonId, profile), 1400);
+}
+
+/**
+ * Load the next lesson in sequence, or show "all done" if on the last one.
+ */
+function _advanceToNextLesson(currentLessonId, profile) {
+  const sequence = ['p2-l1','p2-l2','p2-l3','p2-l4','p2-l5'];
+  const idx = sequence.indexOf(currentLessonId);
+  if (idx === -1) return;
+
+  if (idx < sequence.length - 1) {
+    // Load the next lesson
+    const nextId = sequence[idx + 1];
+    if (window.TSACodeEditor) {
+      TSACodeEditor.loadLesson(nextId);
+    }
+  } else {
+    // On the last lesson — show completion state
+    const titleEl = document.getElementById('lessonTitle');
+    const descEl  = document.getElementById('lessonDesc');
+    if (titleEl) titleEl.textContent = 'Phase 2 — All Lessons Complete! 🎉';
+    if (descEl)  descEl.textContent  = 'You've finished all 5 Phase 2 lessons. Head to your Dashboard to see your progress.';
+    const markBtn = document.querySelector('button[onclick="markLessonDone()"]');
+    if (markBtn) { markBtn.disabled = true; markBtn.textContent = '✅ All Done!'; }
+  }
+}
+
+// Render step dots
+function _renderStepDots(current, total) {
+  const el = document.getElementById('stepDots');
+  const lb = document.getElementById('stepLabel');
+  if (el) el.innerHTML = Array.from({length:total},(_,i)=>
+    `<div class="step-dot${i<current?' d':i===current?' c':''}"></div>`).join('');
+  if (lb) lb.textContent = `Step ${current+1} of ${total}`;
+}
+
+// Run code on editor screen load — loads the user's current Phase 2 lesson
+TSA.routes['editor'] = async () => {
+  if (!window.TSACodeEditor) {
+    setTimeout(() => { runCode(); _renderStepDots(0, 5); _hintTier = 0; document.getElementById('hintBar').style.display = 'none'; }, 100);
+    return;
+  }
+
+  // Find which lesson to load: look at profile progress and load the first incomplete lesson
+  const profile = await TSA.services.sessionManager.getActiveProfile();
+  const sequence = ['p2-l1','p2-l2','p2-l3','p2-l4','p2-l5'];
+
+  if (profile) {
+    const completed = profile.phaseProgress?.j2?.lessonsComplete || [];
+    // Find first lesson not yet completed
+    const nextLesson = sequence.find(id => !completed.includes(id));
+    if (nextLesson) {
+      TSACodeEditor.loadLesson(nextLesson);
+    } else {
+      // All done — load last lesson in read-only/review mode
+      TSACodeEditor.loadLesson('p2-l5');
+      setTimeout(() => {
+        const titleEl = document.getElementById('lessonTitle');
+        const descEl  = document.getElementById('lessonDesc');
+        if (titleEl) titleEl.textContent = 'Phase 2 — All Lessons Complete! 🎉';
+        if (descEl)  descEl.textContent  = 'You've finished all 5 Phase 2 lessons. Head to your Dashboard to see your progress.';
+        const markBtn = document.querySelector('button[onclick="markLessonDone()"]');
+        if (markBtn) { markBtn.disabled = true; markBtn.textContent = '✅ All Done!'; }
+      }, 150);
+    }
+  } else {
+    // No session — load default lesson 1
+    TSACodeEditor.loadLesson('p2-l1');
+  }
+};
+
+// Run QR on tipjar load
+TSA.routes['tipjar'] = () => setTimeout(drawBtcQR, 100);
+
+// Onboarding screen: always reset form state when opened
+TSA.routes['onboard'] = () => resetOnboarding();
+
+// ── Cookie policy toggles (Stage 15) ─────────────────────────────────────
+function toggleGoogleFonts(enabled) {
+  try { localStorage.setItem('ts_fonts_disabled', enabled ? '0' : '1'); } catch {}
+  if (!enabled) {
+    // Remove Google Fonts link tags
+    document.querySelectorAll('link[href*="fonts.googleapis.com"]').forEach(l => l.remove());
+    // Fallback to system fonts via CSS variable override
+    document.documentElement.style.setProperty('--font-body', 'system-ui, sans-serif');
+    document.documentElement.style.setProperty('--font-head', 'system-ui, sans-serif');
+  } else {
+    // Reload fonts
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Fredoka+One&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap';
+    document.head.appendChild(link);
+    document.documentElement.style.removeProperty('--font-body');
+    document.documentElement.style.removeProperty('--font-head');
+  }
+}
+
+function toggleOnlineAI(enabled) {
+  if (window.TSA) window.TSA.config.featureFlags.onlineAI = enabled;
+  try { localStorage.setItem('ts_online_ai', enabled ? '1' : '0'); } catch {}
+  const status = document.getElementById('aiOnlineStatus');
+  if (status) status.textContent = enabled ? 'Online AI is now enabled for Y5+ profiles' : 'Online AI is disabled';
+}
+
+// Init cookie policy page toggles when opened
+TSA.routes['cookies'] = () => {
+  setTimeout(() => {
+    const fontsOff = localStorage.getItem('ts_fonts_disabled') === '1';
+    const aiOn     = localStorage.getItem('ts_online_ai') === '1';
+    const tFonts   = document.getElementById('toggleFonts');
+    const tAI      = document.getElementById('toggleAI');
+    if (tFonts) tFonts.checked = !fontsOff;
+    if (tAI)    tAI.checked    = aiOn;
+    if (window.TSA) window.TSA.config.featureFlags.onlineAI = aiOn;
+  }, 50);
+};
+
+// Restore persisted preferences on load
+(function _restorePrefs() {
+  try {
+    if (localStorage.getItem('ts_fonts_disabled') === '1') toggleGoogleFonts(false);
+    if (localStorage.getItem('ts_online_ai') === '1' && window.TSA) {
+      window.TSA.config.featureFlags.onlineAI = true;
+    }
+  } catch {}
 })();
-
-window.TSASenior = TSASenior;
+</script>
+</body>
+</html>

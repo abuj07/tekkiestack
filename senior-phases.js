@@ -1,257 +1,413 @@
 /**
- * TekkieStack 2.0 — Code Editor Module
- * Handles lesson content, hint system, live preview, and lesson progress.
- * Built in Stage 5. Full lesson library added in Stage 9.
+ * TekkieStack 2.0 — Engagement Engine Module (Stage 11)
+ * Daily challenges, return engine, badge showcase, XP milestone toasts.
+ * Works alongside xp.js (core logic) — this module handles the UI layer.
+ *
+ * XP Events:   lesson +20 | project +10 | daily +15 | debug +25 | cert +50
+ *              streak-7 +30 | streak-30 +100 | first-build +25 | badge +10
+ * Milestones:  100 | 250 | 500 | 1000 | 2500 XP
+ * Streaks:     freeze token per 7 days (max 3)
+ * Return:      1 day → welcome back | 2 days → recap | 3+ → reminder | 7+ → refresher
  *
  * Author: Aperintel Ltd
  */
 
-const TSACodeEditor = (() => {
+const TSAEngagement = (() => {
 
-  // ── Phase 2 Lessons ──────────────────────────────────────────────────────
-  const LESSONS = {
-    'p2-l1': {
-      id: 'p2-l1', phase: 2, num: 1,
-      title: 'Phase 2 · Lesson 1 — HTML Structure',
-      desc: 'Learn the anatomy of a web page',
-      xp: 20,
-      gateYr: 4,
-      starterCode: `<!DOCTYPE html>
-<html>
-<head>
-  <title>My First Page</title>
-</head>
-<body>
-  <h1>Hello World!</h1>
-  <p>This is my first web page.</p>
-</body>
-</html>`,
-      hints: [
-        'Hint 1: Every web page starts with <code>&lt;!DOCTYPE html&gt;</code> — this tells the browser what kind of file it is.',
-        'Hint 2: The <code>&lt;head&gt;</code> section holds information <em>about</em> the page. The <code>&lt;body&gt;</code> holds everything you actually <em>see</em>.',
-        'Answer: Try changing the text inside <code>&lt;h1&gt;</code> and <code>&lt;p&gt;</code> to something about yourself!',
-      ],
-    },
-    'p2-l2': {
-      id: 'p2-l2', phase: 2, num: 2,
-      title: 'Phase 2 · Lesson 2 — Headings & Paragraphs',
-      desc: 'Use h1–h6 and p tags to structure content',
-      xp: 20,
-      gateYr: 4,
-      starterCode: `<!DOCTYPE html>
-<html>
-<body>
-  <h1>My Favourite Things</h1>
-  <h2>Food</h2>
-  <p>I love pizza and ice cream.</p>
-  <h2>Games</h2>
-  <p>My favourite game is Minecraft.</p>
-</body>
-</html>`,
-      hints: [
-        'Hint 1: Headings go from h1 (biggest) to h6 (smallest). Use them like chapters in a book.',
-        'Hint 2: Each <code>&lt;p&gt;</code> tag creates a paragraph. The browser adds space above and below automatically.',
-        'Answer: Try adding a third <code>&lt;h2&gt;</code> section with your own topic and a <code>&lt;p&gt;</code> underneath.',
-      ],
-    },
-    'p2-l3': {
-      id: 'p2-l3', phase: 2, num: 3,
-      title: 'Phase 2 · Lesson 3 — CSS Styling',
-      desc: 'Make your page look amazing with colours and fonts',
-      xp: 20,
-      gateYr: 4,
-      starterCode: `<!DOCTYPE html>
+  // ── Daily challenge pool ──────────────────────────────────────────────────
+  const CHALLENGE_POOL = [
+    {
+      id: 'dc-001', title: 'Fix the Broken Button',
+      desc: 'There\'s a typo in the JavaScript — the button isn\'t responding. Find it and fix it!',
+      tags: ['🐛 Debug', '⏱ 5 mins', '+15 XP'], xp: 15, type: 'debug',
+      code: `<!DOCTYPE html>
 <html>
 <head>
   <style>
-    body {
-      background: #0F1F3D;
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 36px;
-    }
-    h1 { color: #00C9B1; font-size: 34px; }
-    p  { font-size: 17px; line-height: 1.6; opacity: 0.8; }
-    .card {
-      background: rgba(255,255,255,0.08);
-      padding: 20px;
-      border-radius: 14px;
-      margin-top: 20px;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-  </style>
-</head>
-<body>
-  <h1>Hello, I'm learning to code! 👋</h1>
-  <p>I'm building my first web page with TekkieStack.</p>
-  <div class="card">
-    <p>My favourite colour is teal. 🩵</p>
-  </div>
-</body>
-</html>`,
-      hints: [
-        'Hint 1: CSS lives inside <code>&lt;style&gt;</code> tags. Each rule says: "for THIS element, do THIS".',
-        'Hint 2: Try changing <code>background: #0F1F3D;</code> to a different hex colour like <code>#2D1B69</code>.',
-        'Answer: Change <code>color: #00C9B1;</code> on the h1 to a colour you like, such as <code>#FFB347</code> (orange).',
-      ],
-    },
-    'p2-l4': {
-      id: 'p2-l4', phase: 2, num: 4,
-      title: 'Phase 2 · Lesson 4 — CSS Flexbox',
-      desc: 'Control layout with flexbox — the most powerful CSS tool',
-      xp: 20,
-      gateYr: 4,
-      starterCode: `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { background: #F8F5F0; font-family: sans-serif; padding: 30px; }
-    .row {
-      display: flex;
-      gap: 16px;
-    }
-    .box {
-      background: #0F1F3D;
-      color: white;
-      padding: 24px;
-      border-radius: 12px;
-      flex: 1;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <h1>My Cards</h1>
-  <div class="row">
-    <div class="box">Card One</div>
-    <div class="box">Card Two</div>
-    <div class="box">Card Three</div>
-  </div>
-</body>
-</html>`,
-      hints: [
-        'Hint 1: <code>display: flex;</code> on a parent makes its children line up in a row automatically.',
-        'Hint 2: <code>gap: 16px;</code> adds space between the flex children. Try changing the number.',
-        'Answer: Try adding <code>justify-content: center;</code> to the <code>.row</code> to centre the cards.',
-      ],
-    },
-    'p2-l5': {
-      id: 'p2-l5', phase: 2, num: 5,
-      title: 'Phase 2 · Lesson 5 — Links & Images',
-      desc: 'Connect pages and add images with anchor and img tags',
-      xp: 20,
-      gateYr: 4,
-      starterCode: `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: sans-serif; padding: 30px; background: #F8F5F0; }
-    a { color: #00A896; font-weight: bold; }
-    img { border-radius: 12px; max-width: 300px; margin-top: 16px; }
-  </style>
-</head>
-<body>
-  <h1>My Links & Images</h1>
-  <p>Visit <a href="https://www.bbc.co.uk" target="_blank">BBC News</a> for the latest news.</p>
-  <br>
-  <img src="https://picsum.photos/300/200" alt="A random photo">
-  <p>Image from Picsum Photos</p>
-</body>
-</html>`,
-      hints: [
-        'Hint 1: <code>&lt;a href="URL"&gt;text&lt;/a&gt;</code> creates a link. <code>target="_blank"</code> opens it in a new tab.',
-        'Hint 2: <code>&lt;img src="URL" alt="description"&gt;</code> embeds an image. The <code>alt</code> is important for accessibility.',
-        'Answer: Try changing the <code>href</code> to your favourite website, and the <code>src</code> to <code>https://picsum.photos/400/200</code>.',
-      ],
-    },
-  };
-
-  // ── Debug challenge ──────────────────────────────────────────────────────
-  const DEBUG_CHALLENGE = {
-    id: 'debug-1', title: 'Daily Challenge — Fix the Broken Button',
-    code: `<!-- 🐛 Debug Challenge — Fix the broken button! -->
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: sans-serif; padding: 28px; background: #0F1F3D; color: #fff; }
-    button { background: #00C9B1; color: #0F1F3D; padding: 12px 22px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 700; }
-    #msg { margin-top: 14px; font-size: 18px; }
+    body { background:#0F1F3D; color:#fff; font-family:sans-serif; padding:30px; }
+    button { background:#00C9B1; color:#0F1F3D; padding:12px 24px; border:none; border-radius:8px; font-size:16px; cursor:pointer; font-weight:700; }
+    #msg { margin-top:14px; font-size:18px; }
   </style>
 </head>
 <body>
   <h2>Debug Challenge 🐛</h2>
   <p>The button does nothing. Find the typo and fix it!</p>
-  <button onclick="showMsg()">Click me!</button>
+  <button onclick="showMssage()">Click me!</button>
   <p id="msg"></p>
   <script>
-    // BUG: The function name has a typo!
-    function showMssg() {
+    function showMessage() {
       document.getElementById("msg").textContent = "Fixed! 🎉";
     }
   <\/script>
 </body>
-</html>`
+</html>`,
+    },
+    {
+      id: 'dc-002', title: 'Style the Navbar',
+      desc: 'The navbar HTML is there but completely unstyled. Add CSS to make it look professional.',
+      tags: ['🎨 CSS', '⏱ 8 mins', '+15 XP'], xp: 15, type: 'challenge',
+      code: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    /* TODO: Style the .navbar so it looks professional
+       - Dark background
+       - Logo on the left, links on the right
+       - Hover effects on links
+    */
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="logo">MyBrand</span>
+    <div class="links">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+    </div>
+  </nav>
+  <h1 style="padding:30px">Page content goes here</h1>
+</body>
+</html>`,
+    },
+    {
+      id: 'dc-003', title: 'Colour Picker',
+      desc: 'Use JavaScript to make a colour picker that updates the background live.',
+      tags: ['⚡ JS', '⏱ 10 mins', '+15 XP'], xp: 15, type: 'challenge',
+      code: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family:sans-serif; padding:40px; text-align:center; transition:background .3s; }
+    input[type=color] { width:80px; height:80px; border:none; cursor:pointer; border-radius:12px; }
+    h2 { margin-bottom:20px; }
+  </style>
+</head>
+<body>
+  <h2>🎨 Pick a Colour</h2>
+  <input type="color" value="#00C9B1" oninput="updateBackground(this.value)">
+  <p id="hexLabel" style="margin-top:14px;font-size:18px;font-weight:700">#00C9B1</p>
+  <script>
+    function updateBackground(colour) {
+      // TODO: Set document.body.style.background to the chosen colour
+      // TODO: Update the #hexLabel text to show the colour value
+    }
+  <\/script>
+</body>
+</html>`,
+    },
+    {
+      id: 'dc-004', title: 'Card Flip Animation',
+      desc: 'Add a CSS transition so the card flips on hover to reveal the back side.',
+      tags: ['🎨 CSS', '⏱ 12 mins', '+15 XP'], xp: 15, type: 'challenge',
+      code: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { background:#0F1F3D; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+    .card-wrapper { width:220px; height:160px; perspective:1000px; cursor:pointer; }
+    .card-inner { width:100%; height:100%; position:relative; /* TODO: Add transform-style and transition */ }
+    .front, .back { position:absolute; width:100%; height:100%; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:40px; }
+    .front { background:#00C9B1; }
+    .back  { background:#FF6B6B; /* TODO: Rotate 180deg by default */ }
+    /* TODO: On .card-wrapper:hover, rotate .card-inner 180deg */
+  </style>
+</head>
+<body>
+  <div class="card-wrapper">
+    <div class="card-inner">
+      <div class="front">🚀</div>
+      <div class="back">🎉</div>
+    </div>
+  </div>
+</body>
+</html>`,
+    },
+    {
+      id: 'dc-005', title: 'Score Counter',
+      desc: 'Build a score counter with + and − buttons and a reset. Use JavaScript to track the score.',
+      tags: ['⚡ JS', '⏱ 8 mins', '+15 XP'], xp: 15, type: 'build',
+      code: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { background:#0F1F3D; color:#fff; font-family:sans-serif; text-align:center; padding:60px; }
+    h1 { font-size:80px; margin-bottom:20px; }
+    button { padding:14px 28px; margin:8px; border:none; border-radius:10px; font-size:20px; font-weight:700; cursor:pointer; }
+    .add { background:#00C9B1; color:#0F1F3D; }
+    .sub { background:#FF6B6B; color:#fff; }
+    .rst { background:rgba(255,255,255,.1); color:#fff; }
+  </style>
+</head>
+<body>
+  <h2>Score Counter</h2>
+  <h1 id="score">0</h1>
+  <button class="sub" onclick="change(-1)">−</button>
+  <button class="add" onclick="change(1)">+</button>
+  <button class="rst" onclick="reset()">Reset</button>
+  <script>
+    let score = 0;
+    function change(n) {
+      // TODO: Add n to score and update the #score element
+    }
+    function reset() {
+      // TODO: Set score to 0 and update the display
+    }
+  <\/script>
+</body>
+</html>`,
+    },
+    {
+      id: 'dc-006', title: 'Responsive Grid',
+      desc: 'Make this grid switch from 3 columns on desktop to 1 column on mobile using CSS only.',
+      tags: ['🎨 CSS', '⏱ 6 mins', '+15 XP'], xp: 15, type: 'challenge',
+      code: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family:sans-serif; background:#F8F5F0; padding:28px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+    .box { background:#0F1F3D; color:white; padding:24px; border-radius:12px; text-align:center; font-size:15px; }
+    /* TODO: Add a media query for screens narrower than 600px
+       Make the grid have 1 column instead of 3 */
+  </style>
+</head>
+<body>
+  <h2>Responsive Grid</h2>
+  <div class="grid">
+    <div class="box">Box 1</div>
+    <div class="box">Box 2</div>
+    <div class="box">Box 3</div>
+    <div class="box">Box 4</div>
+    <div class="box">Box 5</div>
+    <div class="box">Box 6</div>
+  </div>
+</body>
+</html>`,
+    },
+  ];
+
+  // ── Return engine messages ─────────────────────────────────────────────────
+  const RETURN_MESSAGES = {
+    1: { title: 'Welcome back!',       msg: 'Good to see you again. Your streak is safe — let\'s keep it going!', emoji: '👋' },
+    2: { title: 'Quick recap?',        msg: 'It\'s been 2 days. Want a quick recap of what you were working on?',  emoji: '📖' },
+    3: { title: 'Pick up where you left off', msg: 'Your last lesson is waiting. It won\'t take long to get back in the flow.', emoji: '🔖' },
+    7: { title: 'Full refresher mode', msg: 'It\'s been a week! Let\'s do a quick refresher before picking up where you were.', emoji: '🔄' },
   };
 
-  // ── Load a lesson into the editor ────────────────────────────────────────
-  /**
-   * @param {string} lessonId
-   */
-  function loadLesson(lessonId) {
-    const lesson = LESSONS[lessonId];
-    if (!lesson) return;
-
-    const title  = document.getElementById('lessonTitle');
-    const desc   = document.getElementById('lessonDesc');
-    const code   = document.getElementById('codeInput');
-    if (title) title.textContent = lesson.title;
-    if (desc)  desc.textContent  = lesson.desc;
-    if (code)  code.value        = lesson.starterCode;
-
-    // Reset hints
-    window._currentHints   = lesson.hints;
-    window._currentHintTier = 0;
-    window._currentLessonId = lessonId;
-    window._currentLessonXp = lesson.xp;
-
-    const bar = document.getElementById('hintBar');
-    if (bar) bar.style.display = 'none';
-
-    // Render step dots
-    if (typeof _renderStepDots === 'function') {
-      _renderStepDots(lesson.num - 1, 5);
-    }
-
-    runCode();
+  // ── Get today's challenge (deterministic by date + profile) ───────────────
+  function getTodaysChallenge(profileId) {
+    const today = new Date().toISOString().slice(0, 10);
+    const seed  = [...(today + profileId)].reduce((a, c) => a + c.charCodeAt(0), 0);
+    return CHALLENGE_POOL[seed % CHALLENGE_POOL.length];
   }
 
-  function loadDebugChallenge() {
-    const code = document.getElementById('codeInput');
-    if (code) code.value = DEBUG_CHALLENGE.code;
-    const title = document.getElementById('lessonTitle');
-    const desc  = document.getElementById('lessonDesc');
-    if (title) title.textContent = DEBUG_CHALLENGE.title;
-    if (desc)  desc.textContent  = 'Find the bug in the JavaScript and fix it';
-    runCode();
+  // ── Check return engine ────────────────────────────────────────────────────
+  async function checkReturn() {
+    const profile = await window.TSA.services.sessionManager.getActiveProfile();
+    if (!profile?.streakLastDate) return null;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const last  = profile.streakLastDate;
+    if (last === today) return null; // active today — no return message
+
+    const diff = Math.round((new Date(today) - new Date(last)) / 86400000);
+    if (diff <= 0) return null;
+
+    const msgKey = diff >= 7 ? 7 : diff >= 3 ? 3 : diff;
+    return RETURN_MESSAGES[msgKey] || RETURN_MESSAGES[3];
   }
 
-  // ── Public API ────────────────────────────────────────────────────────────
-  return { LESSONS, loadLesson, loadDebugChallenge };
-})();
+  // ── Show return banner ─────────────────────────────────────────────────────
+  async function showReturnBannerIfNeeded() {
+    const msg = await checkReturn();
+    if (!msg) return;
 
-if (typeof window !== 'undefined') {
-  window.TSACodeEditor = TSACodeEditor;
-  // Register the editor route. This runs after app.js has created window.TSA,
-  // but BEFORE the inline <script> at the bottom of index.html sets its own
-  // TSA.routes['editor']. The inline script will overwrite this — which is fine
-  // because the inline route calls TSACodeEditor.loadLesson() directly.
-  // If TSA.routes['editor'] is already set (e.g. hot-reload), preserve it.
-  if (window.TSA && !window.TSA.routes['editor']) {
-    window.TSA.routes['editor'] = () => {
-      setTimeout(() => {
-        TSACodeEditor.loadLesson('p2-l3');
-      }, 50);
+    const el = document.getElementById('returnBanner');
+    if (el) el.remove(); // clear any existing
+
+    const banner = document.createElement('div');
+    banner.id = 'returnBanner';
+    banner.style.cssText = `
+      position:fixed;top:var(--nav-h);left:0;right:0;
+      background:linear-gradient(135deg,var(--navy),var(--navy2));
+      border-bottom:1px solid rgba(0,201,177,.25);
+      padding:13px 24px;display:flex;align-items:center;gap:14px;
+      z-index:95;animation:slideDown .3s ease;flex-wrap:wrap;
+    `;
+    banner.innerHTML = `
+      <span style="font-size:24px">${msg.emoji}</span>
+      <div style="flex:1;min-width:200px">
+        <div style="font-family:'Fredoka One',cursive;font-size:16px;color:#fff">${msg.title}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);font-weight:500">${msg.msg}</div>
+      </div>
+      <button class="btn btn-cy" style="font-size:13px;padding:8px 16px" onclick="need('dashboard');document.getElementById('returnBanner').remove()">Continue →</button>
+      <button class="btn" style="font-size:12px;padding:8px 13px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5)" onclick="document.getElementById('returnBanner').remove()">✕</button>
+    `;
+    const nav = document.querySelector('.nav');
+    nav?.after(banner);
+    setTimeout(() => banner?.remove(), 12000);
+  }
+
+  // ── Render daily challenge card (used by dashboard) ────────────────────────
+  async function renderDailyCard(containerId) {
+    const el      = document.getElementById(containerId);
+    const profile = await window.TSA.services.sessionManager.getActiveProfile();
+    if (!el || !profile) return;
+
+    const ch    = getTodaysChallenge(profile.profileId);
+    const today = new Date().toISOString().slice(0, 10);
+    const done  = profile.phaseProgress?.daily_challenges?.includes(today);
+
+    el.innerHTML = `
+      <div class="dbadge">⚡ Daily · ${new Date().toLocaleDateString('en-GB', { weekday:'long' })}</div>
+      <div class="daily-title">${ch.title}</div>
+      <div class="daily-desc">${ch.desc}</div>
+      <div class="mtags">${ch.tags.map(t => `<span class="mtag">${t}</span>`).join('')}</div>
+      <div class="brow">
+        ${done ? `
+          <div style="display:flex;align-items:center;gap:8px;color:var(--green);font-weight:800;font-size:14px">✅ Completed today! Well done!</div>
+        ` : `
+          <button class="btn btn-cy" onclick="TSAEngagement.startDailyChallenge()">Start Challenge</button>
+          <button class="btn btn-gh" onclick="TSAEngagement.skipDailyChallenge()">Skip today</button>
+        `}
+      </div>
+    `;
+  }
+
+  // ── Start daily challenge ─────────────────────────────────────────────────
+  async function startDailyChallenge() {
+    const profile = await window.TSA.services.sessionManager.getActiveProfile();
+    if (!profile) return;
+    const ch = getTodaysChallenge(profile.profileId);
+    // Load challenge into code editor
+    const codeInput = document.getElementById('codeInput');
+    if (codeInput) codeInput.value = ch.code;
+    const lessonTitle = document.getElementById('lessonTitle');
+    const lessonDesc  = document.getElementById('lessonDesc');
+    if (lessonTitle) lessonTitle.textContent = `Daily Challenge — ${ch.title}`;
+    if (lessonDesc)  lessonDesc.textContent  = ch.desc;
+    go('editor');
+    setTimeout(() => {
+      if (typeof runCode === 'function') runCode();
+    }, 150);
+  }
+
+  // ── Complete daily challenge ──────────────────────────────────────────────
+  async function completeDailyChallenge() {
+    const profile = await window.TSA.services.sessionManager.getActiveProfile();
+    if (!profile) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const prog  = { ...(profile.phaseProgress || {}) };
+    if (!prog.daily_challenges) prog.daily_challenges = [];
+    if (prog.daily_challenges.includes(today)) return; // already done
+    prog.daily_challenges.push(today);
+    await window.TSA.services.sessionManager.updateProfile(profile.profileId, { phaseProgress: prog });
+    const { newXp, newBadges } = await window.TSA.services.xp.addXP('DAILY_CHALLENGE');
+    celebrate('⚡', 'Daily Challenge Done!', `+15 XP · Total: ${newXp}`, '+15 XP');
+  }
+
+  // ── Skip daily challenge ──────────────────────────────────────────────────
+  async function skipDailyChallenge() {
+    await renderDailyCard('dailyChallengeCard');
+  }
+
+  // ── Badge showcase render ─────────────────────────────────────────────────
+  async function renderBadgeShowcase(containerId) {
+    const el      = document.getElementById(containerId);
+    const profile = await window.TSA.services.sessionManager.getActiveProfile();
+    if (!el || !profile) return;
+
+    const allBadges = window.TSA.services.xp.BADGES;
+    el.innerHTML = `
+      <div class="clabel">My Badges</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px">
+        ${Object.entries(allBadges).map(([key, badge]) => {
+          const earned = (profile.badges || []).includes(key);
+          return `
+            <div style="text-align:center;padding:14px 8px;border-radius:11px;border:1.5px solid ${earned ? 'var(--cyan)' : 'var(--border)'};background:${earned ? '#F0FDFB' : 'var(--slate)'};opacity:${earned ? 1 : .45};transition:all .2s" title="${badge.label}">
+              <div style="font-size:26px;margin-bottom:5px">${earned ? badge.emoji : '🔒'}</div>
+              <div style="font-size:10px;font-weight:700;color:${earned ? 'var(--navy)' : 'var(--muted)'};line-height:1.3">${badge.label}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  // ── XP milestone toast ─────────────────────────────────────────────────────
+  function showMilestoneToast(milestone) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+      background:linear-gradient(135deg,var(--navy),var(--navy2));
+      border:1px solid var(--cyan);border-radius:14px;padding:14px 22px;
+      display:flex;align-items:center;gap:12px;z-index:400;
+      box-shadow:0 8px 32px rgba(0,0,0,.3);animation:slideUp .3s ease;
+      min-width:280px;max-width:380px;
+    `;
+    toast.innerHTML = `
+      <span style="font-size:30px">${milestone.emoji}</span>
+      <div>
+        <div style="font-family:'Fredoka One',cursive;font-size:17px;color:#fff">${milestone.label} unlocked!</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:2px">${milestone.xp} XP milestone reached</div>
+      </div>
+      <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer">✕</button>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast?.remove(), 5000);
+  }
+
+  // ── Hook into XP engine to auto-show milestone toasts ─────────────────────
+  function _hookMilestones() {
+    const origAddXP = window.TSA.services.xp.addXP.bind(window.TSA.services.xp);
+    window.TSA.services.xp.addXP = async (eventKey, override) => {
+      const result = await origAddXP(eventKey, override);
+      if (result.newBadges?.length) {
+        for (const badge of result.newBadges) {
+          const milestone = window.TSA.services.xp.MILESTONES.find(m => m.badge === badge);
+          if (milestone) setTimeout(() => showMilestoneToast(milestone), 800);
+        }
+      }
+      return result;
     };
   }
-}
+
+  // ── Wire dashboard daily card ──────────────────────────────────────────────
+  function wireDashboard() {
+    // Replace static daily challenge card in dashboard with dynamic one
+    const card = document.querySelector('.c-daily');
+    if (card) {
+      card.id = 'dailyChallengeCard';
+      renderDailyCard('dailyChallengeCard');
+    }
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  async function init() {
+    _hookMilestones();
+    await showReturnBannerIfNeeded();
+    wireDashboard();
+  }
+
+  // Hook into dashboard route to wire live daily challenge
+  if (window.TSA) {
+    const origDash = window.TSA.routes['dashboard'];
+    window.TSA.routes['dashboard'] = () => {
+      if (origDash) origDash();
+      setTimeout(() => {
+        wireDashboard();
+        showReturnBannerIfNeeded();
+      }, 100);
+    };
+  }
+
+  return {
+    CHALLENGE_POOL, getTodaysChallenge, checkReturn,
+    showReturnBannerIfNeeded, renderDailyCard, renderBadgeShowcase,
+    startDailyChallenge, completeDailyChallenge, skipDailyChallenge,
+    showMilestoneToast, init,
+  };
+})();
+
+window.TSAEngagement = TSAEngagement;
