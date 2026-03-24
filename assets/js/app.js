@@ -122,43 +122,42 @@ function promptEnd() {
     const ti = document.getElementById('eMoTi');
     if (av) av.textContent = p.avatar;
     if (ti) ti.textContent = `Done for now, ${p.name}?`;
+    // Restore default button text (in case it was changed by _promptEndBeforeNewProfile)
+    const endBtn  = document.querySelector('#endOvl .btn-co');
+    const keepBtn = document.querySelector('#endOvl .btn-gh');
+    if (endBtn  && endBtn.textContent  !== 'End Session')        { endBtn.textContent  = 'End Session'; endBtn.onclick = endSession; }
+    if (keepBtn && keepBtn.textContent !== 'Keep Going')         { keepBtn.textContent = 'Keep Going'; keepBtn.onclick = () => document.getElementById('endOvl')?.classList.remove('show'); }
+    const sub = document.querySelector('#endOvl .modal-sub');
+    if (sub) sub.textContent = "Your progress is saved. End session so someone else can use TekkieStack.";
     document.getElementById('endOvl')?.classList.add('show');
   });
 }
 
 /**
- * Show a prompt telling the user they must end the current session
- * before they can create a new profile.
- * @param {string} name — name of the currently logged-in profile
+ * Shown when a user clicks "New Profile" while someone is logged in.
+ * Reuses the end-session overlay with customised text and a button
+ * that ends the session and then navigates to onboarding.
  */
-function _showEndSessionPromptForNewProfile(name) {
-  const e = window.TSASecurity ? window.TSASecurity.esc : (s => String(s));
-  // Reuse the end-session overlay with a custom message
-  const av = document.getElementById('eMoAv');
-  const ti = document.getElementById('eMoTi');
+function _promptEndBeforeNewProfile(name) {
+  const e  = window.TSASecurity ? window.TSASecurity.esc : s => String(s || '');
+  const av  = document.getElementById('eMoAv');
+  const ti  = document.getElementById('eMoTi');
   const sub = document.querySelector('#endOvl .modal-sub');
   if (av)  av.textContent  = '👤';
-  if (ti)  ti.textContent  = `${e(name)} is still logged in`;
+  if (ti)  ti.textContent  = e(name) + ' is still logged in';
   if (sub) sub.textContent = 'Please end the current session before creating a new profile.';
-  // Swap the "Keep Going" button to go to onboarding after ending session
-  const keepBtn = document.querySelector('#endOvl .btn-gh');
+
   const endBtn  = document.querySelector('#endOvl .btn-co');
+  const keepBtn = document.querySelector('#endOvl .btn-gh');
   if (keepBtn) {
     keepBtn.textContent = 'Cancel';
-    keepBtn.onclick = () => {
-      document.getElementById('endOvl')?.classList.remove('show');
-      // Restore default text
-      if (sub) sub.textContent = 'Your progress is saved. End session so someone else can use TekkieStack.';
-      if (keepBtn) { keepBtn.textContent = 'Keep Going'; keepBtn.onclick = () => document.getElementById('endOvl')?.classList.remove('show'); }
-    };
+    keepBtn.onclick = () => document.getElementById('endOvl')?.classList.remove('show');
   }
   if (endBtn) {
     endBtn.textContent = 'End Session & Create Profile';
     endBtn.onclick = async () => {
+      document.getElementById('endOvl')?.classList.remove('show');
       await endSession();
-      // Restore default end button
-      if (endBtn) { endBtn.textContent = 'End Session'; endBtn.onclick = endSession; }
-      if (sub) sub.textContent = 'Your progress is saved. End session so someone else can use TekkieStack.';
       go('onboard');
     };
   }
@@ -239,14 +238,12 @@ async function renderPicker() {
   const addCard = document.createElement('div');
   addCard.className = 'add-card';
   addCard.innerHTML = `<span class="ai-">＋</span><div class="al">New Profile</div>`;
-  addCard.onclick   = async () => {
-    // If a session is active, the user must end it before creating a new profile
-    const activeSess = await TSA.services.sessionManager.getActiveSession();
-    if (activeSess) {
-      const activeProfile = await TSA.storage.get('profiles_store', activeSess.profileId);
-      const name = activeProfile ? activeProfile.name : 'someone';
-      // Show a modal-style confirmation rather than a plain alert
-      _showEndSessionPromptForNewProfile(name);
+  addCard.onclick = async () => {
+    const sess = await TSA.services.sessionManager.getActiveSession();
+    if (sess) {
+      // A profile is active — show prompt to end session first
+      const ap = await TSA.storage.get('profiles_store', sess.profileId);
+      _promptEndBeforeNewProfile(ap ? ap.name : 'Current user');
     } else {
       go('onboard');
     }
