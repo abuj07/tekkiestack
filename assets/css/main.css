@@ -393,8 +393,8 @@ h1, h2, h3, h4,
 .ob-desc { font-size:14px; color:var(--muted); margin-bottom:24px; line-height:1.55; font-weight:500; }
 .ob-input { width:100%; padding:14px 16px; border:1.5px solid var(--border); border-radius:11px; font-family:'Fredoka One',cursive; font-size:19px; text-align:center; outline:none; margin-bottom:12px; transition:border-color .2s; }
 .ob-input:focus { border-color:var(--cyan); }
-.avatar-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-bottom:20px; position:relative; z-index:2;}
-.av-btn { aspect-ratio:1; border-radius:9px; border:1.5px solid var(--border); font-size:23px; cursor:pointer; background:#fff; transition:all .17s; display:flex; align-items:center; justify-content:center; position:relative; z-index:2;}
+.avatar-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-bottom:20px; position:relative; z-index:2; }
+.av-btn { aspect-ratio:1; border-radius:9px; border:1.5px solid var(--border); font-size:23px; cursor:pointer; background:#fff; transition:all .17s; display:flex; align-items:center; justify-content:center; position:relative; z-index:2; }
 .av-btn:hover { border-color:var(--cyan); background:var(--slate); }
 .av-btn.sel { border-color:var(--cyan); background:#F0FDFB; transform:scale(1.1); }
 .year-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:20px; }
