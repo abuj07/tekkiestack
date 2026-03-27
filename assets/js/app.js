@@ -387,7 +387,7 @@ function _initFooter() {
 // ── Service worker registration ────────────────────────────────────────────
 function _registerSW() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').then(reg => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
       console.log('[SW] Registered:', reg.scope);
     }).catch(err => {
       console.warn('[SW] Registration failed:', err);
@@ -461,10 +461,7 @@ async function _init() {
 
     // 3. Attach UI helpers to namespace
     TSA.ui = { celebrate, closeC, go, need, promptEnd };
-    // Register onboard route (FIX)
-    TSA.routes['onboard'] = function() {
-    if (typeof resetOnboarding === 'function') resetOnboarding();
-    };
+
     // 4. Offline & cookie banner
     _setupOfflineIndicator();
     _initCookieBanner();
