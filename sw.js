@@ -4,25 +4,25 @@
  * Author: Aperintel Ltd
  */
 
-const CACHE_VERSION = 'ts-v2';  // bump this string on every production deploy
+const CACHE_VERSION = 'ts-v3';  // bump this string on every production deploy
 const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/assets/css/main.css',
-  '/assets/js/security.js',
-  '/assets/js/storage.js',
-  '/assets/js/session.js',
-  '/assets/js/xp.js',
-  '/assets/js/app.js',
-  '/assets/img/logo.png',
-  '/modules/code-editor.js',
-  '/modules/typing-trainer.js',
-  '/modules/ai-lab.js',
-  '/modules/support-chat.js',
-  '/modules/junior-phases.js',
-  '/modules/senior-phases.js',
-  '/modules/engagement.js',
+  './',
+  './index.html',
+  './manifest.json',
+  './assets/css/main.css',
+  './assets/js/security.js',
+  './assets/js/storage.js',
+  './assets/js/session.js',
+  './assets/js/xp.js',
+  './assets/js/app.js',
+  './assets/img/logo.png',
+  './modules/code-editor.js',
+  './modules/typing-trainer.js',
+  './modules/ai-lab.js',
+  './modules/support-chat.js',
+  './modules/junior-phases.js',
+  './modules/senior-phases.js',
+  './modules/engagement.js',
   // Google Fonts — cached on first fetch
   'https://fonts.googleapis.com/css2?family=Fredoka+One&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap'
 ];
@@ -78,7 +78,7 @@ self.addEventListener('fetch', (event) => {
         return response;
       }).catch(() => {
         if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
+          return caches.match('./index.html');
         }
       });
     })

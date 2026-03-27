@@ -882,7 +882,7 @@ function starterPreview() {
     pr.innerHTML = '<strong>'+m[1]+'</strong>';
     document.getElementById('ob4Btn').disabled = false;
   } else {
-    pr.innerHTML = '<span style="color:var(--muted);font-size:14px;font-family:'DM Sans',sans-serif">Replace ___ above to see it appear...</span>';
+    pr.innerHTML = '<span style="color:var(--muted);font-size:14px;font-family:\'DM Sans\',sans-serif">Replace ___ above to see it appear...</span>';
     document.getElementById('ob4Btn').disabled = true;
   }
 }
@@ -1095,7 +1095,8 @@ TSA.routes['tipjar'] = () => setTimeout(drawBtcQR, 100);
 // Onboarding screen: always reset form state when opened so second-profile
 // creation starts completely fresh (fixes avatar/continue/duplicate-profile bugs)
 TSA.routes['onboard'] = () => {
-  resetOnboarding();
+  // Small timeout so the screen transition completes first
+  setTimeout(resetOnboarding, 30);
 };
 
 // ── Cookie policy toggles (Stage 15) ─────────────────────────────────────
