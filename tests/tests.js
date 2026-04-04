@@ -192,7 +192,7 @@ window.TSA_TESTS = [
         name: 'XP_EVENTS has expected keys',
         fn: async () => {
           if (!window._TSAXpModule) return skip('No XP module');
-          const required = ['LESSON_COMPLETE','PROJECT_SAVE','DAILY_CHALLENGE','DEBUG_SOLVED','CERTIFICATE','STREAK_7','STREAK_30','FIRST_BUILD'];
+          const required = ['LESSON_COMPLETE','PROJECT_SAVE','DAILY_CHALLENGE','DEBUG_SOLVED','CERTIFICATE','STREAK_7','STREAK_30','FIRST_BUILD','QUIZ_PASS','QUIZ_PERFECT','PHASE_COMPLETE'];
           const missing = required.filter(k => !(k in window._TSAXpModule.XP_EVENTS));
           if (missing.length) return fail('Missing XP events: ' + missing.join(', '));
           return ok('All required XP events present');
@@ -217,13 +217,42 @@ window.TSA_TESTS = [
         }
       },
       {
-        name: 'MILESTONES defined correctly',
+        name: 'MILESTONES defined correctly (7 milestones)',
         fn: async () => {
           if (!window._TSAXpModule) return skip('No XP module');
           const m = window._TSAXpModule.MILESTONES;
-          if (!Array.isArray(m) || m.length < 5) return fail('Expected at least 5 milestones');
+          if (!Array.isArray(m) || m.length < 7) return fail(`Expected at least 7 milestones, got ${m?.length}`);
           if (m[0].xp !== 100) return fail('First milestone should be 100 XP');
-          return ok(`${m.length} milestones defined`);
+          const lastXp = m[m.length - 1].xp;
+          if (lastXp < 5000) return fail(`Expected top milestone >= 5000 XP, got ${lastXp}`);
+          return ok(`${m.length} milestones defined, top threshold: ${lastXp} XP`);
+        }
+      },
+      {
+        name: 'QUIZ_PASS = 15 XP',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const xp = window._TSAXpModule.XP_EVENTS.QUIZ_PASS;
+          if (xp !== 15) return fail(`Expected 15, got ${xp}`);
+          return ok('QUIZ_PASS = 15 XP');
+        }
+      },
+      {
+        name: 'QUIZ_PERFECT = 25 XP',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const xp = window._TSAXpModule.XP_EVENTS.QUIZ_PERFECT;
+          if (xp !== 25) return fail(`Expected 25, got ${xp}`);
+          return ok('QUIZ_PERFECT = 25 XP');
+        }
+      },
+      {
+        name: 'PHASE_COMPLETE = 50 XP',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const xp = window._TSAXpModule.XP_EVENTS.PHASE_COMPLETE;
+          if (xp !== 50) return fail(`Expected 50, got ${xp}`);
+          return ok('PHASE_COMPLETE = 50 XP');
         }
       },
       {
@@ -1063,6 +1092,287 @@ window.TSA_TESTS = [
           });
           if (!hasSheet) return skip('Cannot inspect stylesheet rules');
           return ok('CSS loaded, reduced-motion rule included in main.css');
+        }
+      },
+    ]
+  },
+
+  // ── 9. Quiz Gate ──────────────────────────────────────────────────────────
+  {
+    name: 'Quiz Gate',
+    tests: [
+      {
+        name: 'Quiz gate module exists',
+        fn: async () => {
+          if (!window.TSAQuizGate) return fail('TSAQuizGate not found on window');
+          return ok('TSAQuizGate present');
+        }
+      },
+      {
+        name: 'hasQuizFor returns true for known lesson',
+        fn: async () => {
+          if (!window.TSAQuizGate) return skip('No quiz gate module');
+          const has = window.TSAQuizGate.hasQuizFor('j1-l1');
+          if (!has) return fail('hasQuizFor("j1-l1") returned false');
+          return ok('hasQuizFor("j1-l1") = true');
+        }
+      },
+      {
+        name: 'hasQuizFor returns false for unknown lesson',
+        fn: async () => {
+          if (!window.TSAQuizGate) return skip('No quiz gate module');
+          const has = window.TSAQuizGate.hasQuizFor('zz-l99');
+          if (has) return fail('hasQuizFor("zz-l99") should return false');
+          return ok('hasQuizFor("zz-l99") = false');
+        }
+      },
+      {
+        name: 'QUIZ_BANKS has 3 questions per lesson',
+        fn: async () => {
+          if (!window.TSAQuizGate) return skip('No quiz gate module');
+          const banks = window.TSAQuizGate.QUIZ_BANKS;
+          const ids = Object.keys(banks);
+          if (ids.length < 10) return fail(`Expected >= 10 lesson quiz banks, got ${ids.length}`);
+          const bad = ids.filter(id => banks[id].length !== 3);
+          if (bad.length) return fail(`These lessons don\'t have exactly 3 questions: ${bad.join(', ')}`);
+          return ok(`${ids.length} lesson quiz banks, all with 3 questions`);
+        }
+      },
+      {
+        name: 'Each question has options array of length 4',
+        fn: async () => {
+          if (!window.TSAQuizGate) return skip('No quiz gate module');
+          const banks = window.TSAQuizGate.QUIZ_BANKS;
+          const errors = [];
+          for (const [id, qs] of Object.entries(banks)) {
+            for (let i = 0; i < qs.length; i++) {
+              if (!Array.isArray(qs[i].options) || qs[i].options.length !== 4) {
+                errors.push(`${id} Q${i+1}: expected 4 options, got ${qs[i].options?.length}`);
+              }
+            }
+          }
+          if (errors.length) return fail(errors.slice(0, 3).join('; '));
+          return ok('All quiz questions have exactly 4 options');
+        }
+      },
+      {
+        name: 'getScore returns -1 when no quiz taken',
+        fn: async () => {
+          if (!window.TSAQuizGate) return skip('No quiz gate module');
+          const score = window.TSAQuizGate.getScore('j1-l1-notaken-test');
+          if (score !== -1) return fail(`Expected -1, got ${score}`);
+          return ok('getScore returns -1 for untaken quiz');
+        }
+      },
+    ]
+  },
+
+  // ── 10. Badge Registry ────────────────────────────────────────────────────
+  {
+    name: 'Badge Registry',
+    tests: [
+      {
+        name: 'BADGES object has at least 18 entries',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const count = Object.keys(window._TSAXpModule.BADGES).length;
+          if (count < 18) return fail(`Expected >= 18 badges, got ${count}`);
+          return ok(`${count} badges defined`);
+        }
+      },
+      {
+        name: 'quiz_ace badge exists',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const b = window._TSAXpModule.getBadge('quiz_ace');
+          if (!b || !b.emoji) return fail('quiz_ace badge not found');
+          return ok(`quiz_ace: ${b.emoji} ${b.label}`);
+        }
+      },
+      {
+        name: 'challenge_champion badge exists',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const b = window._TSAXpModule.getBadge('challenge_champion');
+          if (!b || !b.emoji) return fail('challenge_champion badge not found');
+          return ok(`challenge_champion: ${b.emoji} ${b.label}`);
+        }
+      },
+      {
+        name: 'phase_j_complete badge exists',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const b = window._TSAXpModule.getBadge('phase_j_complete');
+          if (!b || !b.emoji) return fail('phase_j_complete badge not found');
+          return ok(`phase_j_complete: ${b.emoji} ${b.label}`);
+        }
+      },
+      {
+        name: 'phase_s_complete badge exists',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const b = window._TSAXpModule.getBadge('phase_s_complete');
+          if (!b || !b.emoji) return fail('phase_s_complete badge not found');
+          return ok(`phase_s_complete: ${b.emoji} ${b.label}`);
+        }
+      },
+      {
+        name: 'master_builder milestone badge exists',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const b = window._TSAXpModule.getBadge('master_builder');
+          if (!b || !b.emoji) return fail('master_builder badge not found');
+          return ok(`master_builder: ${b.emoji} ${b.label}`);
+        }
+      },
+      {
+        name: 'code_titan milestone badge exists',
+        fn: async () => {
+          if (!window._TSAXpModule) return skip('No XP module');
+          const b = window._TSAXpModule.getBadge('code_titan');
+          if (!b || !b.emoji) return fail('code_titan badge not found');
+          return ok(`code_titan: ${b.emoji} ${b.label}`);
+        }
+      },
+    ]
+  },
+
+  // ── 11. Challenge Pool ────────────────────────────────────────────────────
+  {
+    name: 'Challenge Pool',
+    tests: [
+      {
+        name: 'Engagement module exists',
+        fn: async () => {
+          if (!window.TSAEngagement) return fail('TSAEngagement not found on window');
+          return ok('TSAEngagement present');
+        }
+      },
+      {
+        name: 'Challenge pool has exactly 30 challenges',
+        fn: async () => {
+          if (!window.TSAEngagement) return skip('No engagement module');
+          const pool = window.TSAEngagement.CHALLENGE_POOL;
+          if (!Array.isArray(pool)) return fail('CHALLENGE_POOL is not an array');
+          if (pool.length !== 30) return fail(`Expected 30 challenges, got ${pool.length}`);
+          return ok('Challenge pool has 30 challenges');
+        }
+      },
+      {
+        name: 'All challenges have required fields',
+        fn: async () => {
+          if (!window.TSAEngagement) return skip('No engagement module');
+          const pool = window.TSAEngagement.CHALLENGE_POOL;
+          if (!Array.isArray(pool)) return skip('No challenge pool');
+          const required = ['id', 'title', 'desc', 'xp'];
+          const bad = pool.filter(c => required.some(f => !(f in c)));
+          if (bad.length) return fail(`${bad.length} challenges missing required fields: ${bad.map(c => c.id).join(', ')}`);
+          return ok('All 30 challenges have id, title, desc, xp');
+        }
+      },
+      {
+        name: 'Challenge IDs are unique',
+        fn: async () => {
+          if (!window.TSAEngagement) return skip('No engagement module');
+          const pool = window.TSAEngagement.CHALLENGE_POOL;
+          if (!Array.isArray(pool)) return skip('No challenge pool');
+          const ids = pool.map(c => c.id);
+          const unique = new Set(ids);
+          if (unique.size !== ids.length) return fail(`Duplicate challenge IDs found`);
+          return ok('All challenge IDs are unique');
+        }
+      },
+      {
+        name: 'Challenges have XP value of 15',
+        fn: async () => {
+          if (!window.TSAEngagement) return skip('No engagement module');
+          const pool = window.TSAEngagement.CHALLENGE_POOL;
+          if (!Array.isArray(pool)) return skip('No challenge pool');
+          const wrong = pool.filter(c => c.xp !== 15);
+          if (wrong.length) return fail(`${wrong.length} challenges have XP != 15: ${wrong.map(c => `${c.id}:${c.xp}`).join(', ')}`);
+          return ok('All challenges have XP = 15');
+        }
+      },
+    ]
+  },
+
+  // ── 12. Lesson Content Coverage ───────────────────────────────────────────
+  {
+    name: 'Lesson Content Coverage',
+    tests: [
+      {
+        name: 'Junior phases module exists',
+        fn: async () => {
+          if (!window.TSAJunior) return fail('TSAJunior not found on window');
+          return ok('TSAJunior present');
+        }
+      },
+      {
+        name: 'Senior phases module exists',
+        fn: async () => {
+          if (!window.TSASenior) return fail('TSASenior not found on window');
+          return ok('TSASenior present');
+        }
+      },
+      {
+        name: 'Junior Phase 1 has 4 lessons with content',
+        fn: async () => {
+          if (!window.TSAJunior) return skip('No junior module');
+          const phase = window.TSAJunior.PHASES['j1'];
+          if (!phase) return fail('Phase j1 not found');
+          const withContent = (phase.lessons || []).filter(l => l.content && l.content.length > 100);
+          if (withContent.length < 4) return fail(`Expected 4 lessons with content, got ${withContent.length}`);
+          return ok(`j1: ${withContent.length} lessons have content`);
+        }
+      },
+      {
+        name: 'Junior Phase 3 has 5 lessons with content',
+        fn: async () => {
+          if (!window.TSAJunior) return skip('No junior module');
+          const phase = window.TSAJunior.PHASES['j3'];
+          if (!phase) return fail('Phase j3 not found');
+          const withContent = (phase.lessons || []).filter(l => l.content && l.content.length > 100);
+          if (withContent.length < 5) return fail(`Expected 5 lessons with content, got ${withContent.length}`);
+          return ok(`j3: ${withContent.length} lessons have content`);
+        }
+      },
+      {
+        name: 'Senior Phase 1 has 6 lessons with content',
+        fn: async () => {
+          if (!window.TSASenior) return skip('No senior module');
+          const phase = window.TSASenior.PHASES['s1'];
+          if (!phase) return fail('Phase s1 not found');
+          const withContent = (phase.lessons || []).filter(l => l.content && l.content.length > 100);
+          if (withContent.length < 6) return fail(`Expected 6 lessons with content, got ${withContent.length}`);
+          return ok(`s1: ${withContent.length} lessons have content`);
+        }
+      },
+      {
+        name: 'Senior Phase 5 has 6 lessons with content',
+        fn: async () => {
+          if (!window.TSASenior) return skip('No senior module');
+          const phase = window.TSASenior.PHASES['s5'];
+          if (!phase) return fail('Phase s5 not found');
+          const withContent = (phase.lessons || []).filter(l => l.content && l.content.length > 100);
+          if (withContent.length < 6) return fail(`Expected 6 lessons with content, got ${withContent.length}`);
+          return ok(`s5: ${withContent.length} lessons have content`);
+        }
+      },
+      {
+        name: 'All senior phases have content on every lesson',
+        fn: async () => {
+          if (!window.TSASenior) return skip('No senior module');
+          const phases = Object.values(window.TSASenior.PHASES);
+          const missing = [];
+          for (const phase of phases) {
+            for (const lesson of (phase.lessons || [])) {
+              if (!lesson.content || lesson.content.length < 50) {
+                missing.push(lesson.id);
+              }
+            }
+          }
+          if (missing.length) return fail(`${missing.length} senior lessons missing content: ${missing.join(', ')}`);
+          return ok(`All ${phases.reduce((n,p) => n + p.lessons.length, 0)} senior lessons have content`);
         }
       },
     ]
