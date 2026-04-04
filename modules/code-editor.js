@@ -375,12 +375,40 @@ const TSACodeEditor = (() => {
     const bar = document.getElementById('hintBar');
     if (bar) bar.style.display = 'none';
 
+    // Show explanation panel if the lesson has one
+    const explPanel = document.getElementById('lessonExplanation');
+    if (explPanel) {
+      if (lesson.explanation) {
+        explPanel.innerHTML = lesson.explanation + `
+          <div style="padding:0 20px 20px">
+            <button onclick="document.getElementById('lessonExplanation').style.display='none'"
+              style="background:var(--cyan);color:var(--navy);border:none;padding:10px 24px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+              Got it — start coding ▶
+            </button>
+          </div>`;
+        explPanel.style.display = 'block';
+      } else {
+        explPanel.style.display = 'none';
+      }
+    }
+
+    // Clear the preview — show placeholder until user clicks Run
+    const frame = document.getElementById('previewFrame');
+    if (frame) {
+      const fd = frame.contentDocument || frame.contentWindow?.document;
+      if (fd) {
+        fd.open();
+        fd.write(`<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#F8FAFC;font-family:'DM Sans',sans-serif;color:#8899AA;text-align:center">
+          <div><div style="font-size:32px;margin-bottom:12px">▶</div><div style="font-size:14px;font-weight:600">Press <strong style="color:#0F1F3D">▶ Run</strong> to preview your code</div></div>
+        </body></html>`);
+        fd.close();
+      }
+    }
+
     // Render step dots
     if (typeof _renderStepDots === 'function') {
       _renderStepDots(lesson.num - 1, 5);
     }
-
-    runCode();
   }
 
   function loadDebugChallenge() {
@@ -390,7 +418,23 @@ const TSACodeEditor = (() => {
     const desc  = document.getElementById('lessonDesc');
     if (title) title.textContent = DEBUG_CHALLENGE.title;
     if (desc)  desc.textContent  = 'Find the bug in the JavaScript and fix it';
-    runCode();
+
+    // Hide explanation panel for debug challenges
+    const explPanel = document.getElementById('lessonExplanation');
+    if (explPanel) explPanel.style.display = 'none';
+
+    // Clear preview — show placeholder
+    const frame = document.getElementById('previewFrame');
+    if (frame) {
+      const fd = frame.contentDocument || frame.contentWindow?.document;
+      if (fd) {
+        fd.open();
+        fd.write(`<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#F8FAFC;font-family:'DM Sans',sans-serif;color:#8899AA;text-align:center">
+          <div><div style="font-size:32px;margin-bottom:12px">🐛</div><div style="font-size:14px;font-weight:600">Fix the bug, then press <strong style="color:#0F1F3D">▶ Run</strong></div></div>
+        </body></html>`);
+        fd.close();
+      }
+    }
   }
 
   // ── Public API ────────────────────────────────────────────────────────────

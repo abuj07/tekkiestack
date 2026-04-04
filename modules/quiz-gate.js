@@ -280,6 +280,15 @@ const TSAQuizGate = (() => {
     ],
   };
 
+  // ── HTML escape helper ─────────────────────────────────────────────────────
+  function _esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   // ── Show quiz modal ────────────────────────────────────────────────────────
   function showQuiz(lessonId, onPass, onFail) {
     const bank = QUIZ_BANKS[lessonId];
@@ -323,11 +332,11 @@ const TSAQuizGate = (() => {
         <div class="tsa-sub">Answer 2 out of 3 correctly to mark this lesson complete.</div>
         ${questions.map((q, qi) => `
           <div class="tsa-q" id="tsaQ${qi}">
-            <div class="tsa-q-text">Q${qi + 1}. ${q.q}</div>
+            <div class="tsa-q-text">Q${qi + 1}. ${_esc(q.q)}</div>
             ${q.options.map((opt, oi) => `
               <label class="tsa-opt" id="tsaOpt${qi}_${oi}">
                 <input type="radio" name="tsaQ${qi}" value="${oi}" onchange="window._tsaQuizCheckReady()">
-                ${opt}
+                <span>${_esc(opt)}</span>
               </label>
             `).join('')}
           </div>
