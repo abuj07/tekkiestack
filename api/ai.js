@@ -25,7 +25,7 @@ export default async function handler(req, res) {
           messages: [
             {
               role: "system",
-              content: "You are a coding tutor for children. Give hints, not full answers."
+              content: "You are a coding tutor for children. Give helpful hints, not full answers."
             },
             {
               role: "user",
@@ -74,12 +74,21 @@ export default async function handler(req, res) {
 
       const hfData = await hfResponse.json();
 
-      const text =
-        hfData?.[0]?.generated_text ||
-        "No response from Hugging Face";
+      // 🔍 Handle ALL response formats
+      let text = null;
+
+      if (Array.isArray(hfData)) {
+        text = hfData?.[0]?.generated_text;
+      } else if (hfData?.generated_text) {
+        text = hfData.generated_text;
+      } else if (hfData?.error) {
+        text = "HF Error: " + hfData.error;
+      } else {
+        text = JSON.stringify(hfData);
+      }
 
       return res.status(200).json({
-        text,
+        text: text || "No usable response",
         source: "huggingface"
       });
 
