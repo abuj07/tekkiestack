@@ -367,19 +367,98 @@
      SCREEN: SUPPORT (scaffold)
 ════════════════════════════════════════════════════ -->
 <div id="s-support" class="screen">
-  <div style="max-width:740px;margin:0 auto;padding:30px 18px">
-    <div style="text-align:center;margin-bottom:24px">
-      <h2 style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--navy)">💬 Help &amp; Support</h2>
-      <p style="font-size:14px;color:var(--muted);margin-top:5px;font-weight:500">Chat with our AI support assistant or log a technical issue.</p>
+  <div style="max-width:640px;margin:0 auto;padding:36px 18px">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:28px">
+      <h2 style="font-family:'Fredoka One',cursive;font-size:30px;color:var(--navy);margin:0 0 6px">💬 Help &amp; Support</h2>
+      <p style="font-size:14px;color:var(--muted);font-weight:500;margin:0">Got a question, spotted a bug, or want to share feedback? We read every message.</p>
     </div>
-    <div style="background:var(--slate);border-radius:var(--r-lg);padding:32px;text-align:center;border:1.5px dashed var(--border)">
-      <div style="font-size:40px;margin-bottom:12px">🔧</div>
-      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--navy);margin-bottom:8px">Full Support Chat — Stage 8</div>
-      <p style="font-size:14px;color:var(--muted);font-weight:500">The full support chat with EmailJS integration will be built in Stage 8.</p>
-      <div style="margin-top:16px">
-        <button class="btn btn-nv" onclick="go('support')" style="display:inline-flex">📬 Open Support</button>
+
+    <!-- Success state (hidden until form submitted) -->
+    <div id="supportSuccess" style="display:none;background:#F0FDF4;border:1.5px solid #22C55E;border-radius:14px;padding:28px;text-align:center;margin-bottom:20px">
+      <div style="font-size:42px;margin-bottom:10px">✅</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#15803D;margin-bottom:6px">Message sent!</div>
+      <p style="font-size:14px;color:#166534;margin:0 0 18px">Thanks for reaching out — we'll get back to you within 1–2 working days.</p>
+      <button onclick="resetSupportForm()" style="background:#22C55E;color:#fff;border:none;padding:10px 24px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Send another message</button>
+    </div>
+
+    <!-- Error banner (hidden until error) -->
+    <div id="supportError" style="display:none;background:#FFF1F1;border:1.5px solid #FF6B6B;border-radius:10px;padding:14px 18px;margin-bottom:18px;font-size:13px;color:#C0392B;font-weight:600"></div>
+
+    <!-- Contact form -->
+    <form id="supportForm" novalidate style="background:var(--slate);border-radius:16px;border:1.5px solid var(--border);padding:28px 24px">
+
+      <!-- Name -->
+      <div style="margin-bottom:18px">
+        <label for="sf-name" style="display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">Your name <span style="color:var(--coral)">*</span></label>
+        <input id="sf-name" name="name" type="text" required autocomplete="name" placeholder="e.g. Alex or Mrs Johnson"
+          style="width:100%;padding:11px 14px;border-radius:9px;border:1.5px solid var(--border);background:#fff;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--navy);box-sizing:border-box;outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'">
+        <div class="sf-field-err" id="err-name" style="display:none;font-size:12px;color:var(--coral);margin-top:4px;font-weight:600"></div>
+      </div>
+
+      <!-- Email -->
+      <div style="margin-bottom:18px">
+        <label for="sf-email" style="display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">Email address <span style="color:var(--coral)">*</span></label>
+        <input id="sf-email" name="email" type="email" required autocomplete="email" placeholder="your@email.com"
+          style="width:100%;padding:11px 14px;border-radius:9px;border:1.5px solid var(--border);background:#fff;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--navy);box-sizing:border-box;outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'">
+        <div class="sf-field-err" id="err-email" style="display:none;font-size:12px;color:var(--coral);margin-top:4px;font-weight:600"></div>
+      </div>
+
+      <!-- Issue type -->
+      <div style="margin-bottom:18px">
+        <label for="sf-type" style="display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">What can we help with? <span style="color:var(--coral)">*</span></label>
+        <select id="sf-type" name="issue_type" required
+          style="width:100%;padding:11px 14px;border-radius:9px;border:1.5px solid var(--border);background:#fff;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--navy);box-sizing:border-box;outline:none;appearance:none;cursor:pointer;transition:border-color .2s"
+          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'">
+          <option value="" disabled selected>Choose a topic…</option>
+          <option value="General Question">General question</option>
+          <option value="Bug Report">Something isn't working (bug report)</option>
+          <option value="Content Help">Help with a lesson or activity</option>
+          <option value="Account / Profile">Account or profile issue</option>
+          <option value="Feature Request">Feature request or suggestion</option>
+          <option value="Parent / Teacher Enquiry">Parent or teacher enquiry</option>
+          <option value="Other">Other</option>
+        </select>
+        <div class="sf-field-err" id="err-type" style="display:none;font-size:12px;color:var(--coral);margin-top:4px;font-weight:600"></div>
+      </div>
+
+      <!-- Message -->
+      <div style="margin-bottom:22px">
+        <label for="sf-message" style="display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">Your message <span style="color:var(--coral)">*</span></label>
+        <textarea id="sf-message" name="message" required rows="5" placeholder="Tell us what's happening — the more detail, the better we can help."
+          style="width:100%;padding:11px 14px;border-radius:9px;border:1.5px solid var(--border);background:#fff;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--navy);box-sizing:border-box;outline:none;resize:vertical;min-height:110px;transition:border-color .2s"
+          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        <div class="sf-field-err" id="err-message" style="display:none;font-size:12px;color:var(--coral);margin-top:4px;font-weight:600"></div>
+      </div>
+
+      <!-- Submit -->
+      <button id="supportSubmitBtn" type="submit"
+        style="width:100%;padding:13px;background:var(--cyan);color:var(--navy);border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Fredoka One',cursive;letter-spacing:0.3px;transition:opacity .2s">
+        📬 Send Message
+      </button>
+
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin:14px 0 0;font-weight:500">
+        Your message is sent securely via Formspree. We never share your details.
+      </p>
+    </form>
+
+    <!-- Quick help links -->
+    <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:var(--slate);border:1.5px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:22px;margin-bottom:6px">📚</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--navy);margin-bottom:4px">Lessons &amp; Content</div>
+        <p style="font-size:12px;color:var(--muted);margin:0;font-weight:500">Use the Hint button inside any lesson, or ask via this form.</p>
+      </div>
+      <div style="background:var(--slate);border:1.5px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:22px;margin-bottom:6px">🔐</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--navy);margin-bottom:4px">Forgot PIN?</div>
+        <p style="font-size:12px;color:var(--muted);margin:0;font-weight:500">On the profile screen, tap "Forgot PIN?" to reset via your guardian.</p>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -520,8 +599,8 @@
       <h2 id="priv-3">3. Data Sent to Third Parties</h2>
       <h3>Anthropic (AI Lab — Y5+ only, disabled by default)</h3>
       <p>When the optional online AI Lab is enabled for Year 5+ learners, the text of the coding question is sent to Anthropic's API. Before sending, our safety layer strips all personal information. The learner's name, year group, device ID, and school are never included in API calls. Anthropic's privacy policy: <strong>anthropic.com/privacy</strong></p>
-      <h3>EmailJS (Support contact form)</h3>
-      <p>When you submit the support form, your message and optional name are routed securely to the Aperintel support team. No profile data or learning progress is included. EmailJS privacy policy: <strong>emailjs.com/legal/privacy-policy</strong></p>
+      <h3>Formspree (Support contact form)</h3>
+      <p>When you submit the support form, your name, email, and message are routed securely to the Aperintel support team via Formspree. No profile data or learning progress is included. Formspree privacy policy: <strong>formspree.io/legal/privacy-policy</strong></p>
       <h3>Google Fonts</h3>
       <p>The app loads fonts from fonts.googleapis.com. Google's servers receive a standard HTTP request that includes your IP address and browser type — this is normal for any website that uses Google Fonts. No cookies are set. You can disable Google Fonts on the Cookie &amp; Storage Policy page to use system fonts instead.</p>
     </div>
@@ -950,6 +1029,103 @@ function copyBTC() {
     t.textContent='✅ Address copied!';
     setTimeout(()=>t.textContent='',2600);
   });
+}
+
+// ── Support contact form (Formspree) ─────────────────────────────────────
+(function () {
+  const ENDPOINT = 'https://formspree.io/f/xykbnawq';
+
+  function _sfShow(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'block';
+    if (msg !== undefined) el.textContent = msg;
+  }
+  function _sfHide(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  }
+  function _sfVal(id, msg) { _sfShow('err-' + id, msg); }
+  function _sfClearErrs() {
+    ['name','email','type','message'].forEach(f => _sfHide('err-' + f));
+    _sfHide('supportError');
+  }
+
+  function _validate() {
+    let ok = true;
+    const name = document.getElementById('sf-name')?.value.trim();
+    const email = document.getElementById('sf-email')?.value.trim();
+    const type  = document.getElementById('sf-type')?.value;
+    const msg   = document.getElementById('sf-message')?.value.trim();
+
+    if (!name)  { _sfVal('name', 'Please enter your name'); ok = false; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      _sfVal('email', 'Please enter a valid email address'); ok = false;
+    }
+    if (!type)  { _sfVal('type', 'Please choose a topic'); ok = false; }
+    if (!msg || msg.length < 10) {
+      _sfVal('message', 'Please enter a message (at least 10 characters)'); ok = false;
+    }
+    return ok;
+  }
+
+  function _setLoading(on) {
+    const btn = document.getElementById('supportSubmitBtn');
+    if (!btn) return;
+    btn.disabled    = on;
+    btn.textContent = on ? '⏳ Sending…' : '📬 Send Message';
+    btn.style.opacity = on ? '0.6' : '1';
+  }
+
+  async function _handleSubmit(e) {
+    e.preventDefault();
+    _sfClearErrs();
+    if (!_validate()) return;
+    _setLoading(true);
+
+    const data = new FormData(document.getElementById('supportForm'));
+
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' }
+      });
+
+      if (res.ok) {
+        _sfHide('supportForm');
+        _sfShow('supportSuccess');
+      } else {
+        const json = await res.json().catch(() => ({}));
+        const errMsg = json?.errors?.map(e => e.message).join(', ')
+          || 'Something went wrong. Please try again or email us directly.';
+        _sfShow('supportError', '⚠ ' + errMsg);
+      }
+    } catch (_) {
+      _sfShow('supportError', '⚠ Could not send — check your internet connection and try again.');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Wire up once the DOM is ready
+  function _init() {
+    const form = document.getElementById('supportForm');
+    if (form) form.addEventListener('submit', _handleSubmit);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _init);
+  } else {
+    _init();
+  }
+})();
+
+function resetSupportForm() {
+  const form = document.getElementById('supportForm');
+  if (form) { form.reset(); form.style.display = ''; }
+  document.getElementById('supportSuccess').style.display = 'none';
+  document.getElementById('supportError').style.display   = 'none';
 }
 
 // ── Clear data (cookie policy page) ─────────────────────────────────────
