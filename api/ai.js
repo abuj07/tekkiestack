@@ -55,11 +55,11 @@ export default async function handler(req, res) {
     }
 
     // -----------------------------
-    // 2️⃣ FALLBACK: HUGGING FACE
+    // 2️⃣ FALLBACK: HUGGING FACE (FIXED)
     // -----------------------------
     try {
       const hfResponse = await fetch(
-        "https://api-inference.huggingface.co/models/google/flan-t5-large",
+        "https://router.huggingface.co/hf-inference/models/google/flan-t5-large",
         {
           method: "POST",
           headers: {
@@ -74,7 +74,6 @@ export default async function handler(req, res) {
 
       const hfData = await hfResponse.json();
 
-      // 🔍 Handle ALL response formats
       let text = null;
 
       if (Array.isArray(hfData)) {
