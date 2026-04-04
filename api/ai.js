@@ -55,11 +55,11 @@ export default async function handler(req, res) {
     }
 
     // -----------------------------
-    // 2️⃣ FALLBACK: HUGGING FACE (FIXED)
+    // 2️⃣ FALLBACK: HUGGING FACE
     // -----------------------------
     try {
       const hfResponse = await fetch(
-        "https://router.huggingface.co/hf-inference/models/google/flan-t5-large",
+        "https://router.huggingface.co/hf-inference/models/microsoft/DialoGPT-medium",
         {
           method: "POST",
           headers: {
@@ -81,25 +81,43 @@ export default async function handler(req, res) {
       } else if (hfData?.generated_text) {
         text = hfData.generated_text;
       } else if (hfData?.error) {
-        text = "HF Error: " + hfData.error;
-      } else {
-        text = JSON.stringify(hfData);
+        console.log("HF error:", hfData.error);
       }
 
-      return res.status(200).json({
-        text: text || "No usable response",
-        source: "huggingface"
-      });
+      if (text) {
+        return res.status(200).json({
+          text,
+          source: "huggingface"
+        });
+      }
 
     } catch (err) {
-      console.error("HF ERROR:", err);
+      console.log("Hugging Face failed");
     }
 
     // -----------------------------
-    // ❌ TOTAL FAILURE
+    // 3️⃣ FINAL FALLBACK (LOCAL AI)
     // -----------------------------
-    return res.status(500).json({
-      error: "All AI providers failed"
+
+    const lowerPrompt = prompt.toLowerCase();
+
+    let fallbackText = "I'm here to help! Try asking about coding or your project 😊";
+
+    if (lowerPrompt.includes("html")) {
+      fallbackText = "HTML is the structure of a webpage. Think of it like the skeleton that holds everything together.";
+    } else if (lowerPrompt.includes("css")) {
+      fallbackText = "CSS controls how a webpage looks — colors, layouts, and styles.";
+    } else if (lowerPrompt.includes("javascript")) {
+      fallbackText = "JavaScript makes websites interactive — like buttons, animations, and logic.";
+    } else if (lowerPrompt.includes("bug") || lowerPrompt.includes("error")) {
+      fallbackText = "Try checking your code step by step. What line is causing the issue?";
+    } else if (lowerPrompt.includes("help")) {
+      fallbackText = "I'm here to help! What are you trying to build?";
+    }
+
+    return res.status(200).json({
+      text: fallbackText,
+      source: "local"
     });
 
   } catch (err) {
