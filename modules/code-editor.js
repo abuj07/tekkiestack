@@ -16,6 +16,39 @@ const TSACodeEditor = (() => {
       desc: 'Learn the anatomy of a web page',
       xp: 20,
       gateYr: 4,
+      explanation: `<div style="padding:20px;max-width:680px;font-family:'DM Sans',sans-serif">
+        <h2 style="font-family:'Fredoka One',cursive;color:var(--navy);margin-bottom:6px">🌐 HTML Structure — The Skeleton of Every Webpage</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Every website you've ever visited — YouTube, BBC, Roblox — is built on HTML. This is where it all starts.</p>
+        <div style="margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:16px;margin-bottom:8px">What this lesson teaches and why it matters</h3>
+          <p style="font-size:14px;line-height:1.75">HTML (HyperText Markup Language) is the structure of a webpage — like the skeleton of a body. Without HTML, browsers would have no idea what to display. Every heading, paragraph, image, and button you've ever clicked is written in HTML.</p>
+        </div>
+        <div style="background:#F0FDFB;border:1.5px solid var(--cyan);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">🔍 Line-by-line explanation</h3>
+          <div style="font-size:13px;line-height:2">
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;!DOCTYPE html&gt;</code> — Tells the browser this is a modern HTML5 document</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;html&gt;</code> — Everything on the page lives inside this tag</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;head&gt;</code> — Holds info <em>about</em> the page (title, stylesheets) — not visible to users</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;title&gt;</code> — The text shown on the browser tab</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;body&gt;</code> — Everything the user actually sees goes here</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;h1&gt;</code> — The main heading (there should only be one per page)</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;p&gt;</code> — A paragraph of text</div>
+          </div>
+        </div>
+        <div style="background:var(--slate);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">✏️ Try These Changes</h3>
+          <ol style="font-size:14px;line-height:2.2;padding-left:18px">
+            <li>Change the &lt;title&gt; text to your own name — check the browser tab updates</li>
+            <li>Change the &lt;h1&gt; text to say hello with your real name</li>
+            <li>Change the &lt;p&gt; text to describe something you're learning</li>
+            <li>Add a second &lt;p&gt; tag underneath with your favourite hobby</li>
+          </ol>
+        </div>
+        <div style="background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:11px;padding:14px">
+          <div style="font-weight:700;color:#1E40AF;margin-bottom:6px;font-size:13px">💡 Did You Know?</div>
+          <p style="font-size:13px;line-height:1.7">The first ever webpage was published by Tim Berners-Lee on 6 August 1991. It had no CSS, no images — just HTML text. It's still live at <em>info.cern.ch</em>!</p>
+        </div>
+      </div>`,
       starterCode: `<!DOCTYPE html>
 <html>
 <head>
@@ -38,6 +71,36 @@ const TSACodeEditor = (() => {
       desc: 'Use h1–h6 and p tags to structure content',
       xp: 20,
       gateYr: 4,
+      explanation: `<div style="padding:20px;max-width:680px;font-family:'DM Sans',sans-serif">
+        <h2 style="font-family:'Fredoka One',cursive;color:var(--navy);margin-bottom:6px">📝 Headings & Paragraphs — Giving Your Page Structure</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Think of headings like the chapter titles in a book, and paragraphs like the text on each page. Every great webpage uses both.</p>
+        <div style="margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:16px;margin-bottom:8px">What this lesson teaches and why it matters</h3>
+          <p style="font-size:14px;line-height:1.75">BBC News uses &lt;h1&gt; for the main story headline, &lt;h2&gt; for section headings, and &lt;p&gt; for every article paragraph. Roblox's website uses the same pattern. Good heading structure also helps people with screen readers navigate your page — and it helps Google rank it.</p>
+        </div>
+        <div style="background:#F0FDFB;border:1.5px solid var(--cyan);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">🔍 Line-by-line explanation</h3>
+          <div style="font-size:13px;line-height:2">
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;h1&gt;</code> — Biggest heading — the page title. Use only once.</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;h2&gt;</code> — Section headings. You can use several on a page.</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;h3&gt; to &lt;h6&gt;</code> — Smaller sub-headings, used for nesting.</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;p&gt;</code> — Paragraph. Browsers add spacing above and below automatically.</div>
+          </div>
+        </div>
+        <div style="background:var(--slate);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">✏️ Try These Changes</h3>
+          <ol style="font-size:14px;line-height:2.2;padding-left:18px">
+            <li>Change the &lt;h1&gt; to your favourite topic (e.g. "My Favourite Things")</li>
+            <li>Add a third &lt;h2&gt; section with a new category and &lt;p&gt; description</li>
+            <li>Add an &lt;h3&gt; inside one section to create a sub-heading</li>
+            <li>Try adding &lt;strong&gt;bold text&lt;/strong&gt; inside a paragraph</li>
+          </ol>
+        </div>
+        <div style="background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:11px;padding:14px">
+          <div style="font-weight:700;color:#1E40AF;margin-bottom:6px;font-size:13px">💡 Did You Know?</div>
+          <p style="font-size:13px;line-height:1.7">Google's search algorithm partially judges page quality by how well you use heading levels. A page with a clear h1, logical h2 sections, and descriptive paragraphs ranks higher than "div soup" with no structure.</p>
+        </div>
+      </div>`,
       starterCode: `<!DOCTYPE html>
 <html>
 <body>
@@ -60,6 +123,38 @@ const TSACodeEditor = (() => {
       desc: 'Make your page look amazing with colours and fonts',
       xp: 20,
       gateYr: 4,
+      explanation: `<div style="padding:20px;max-width:680px;font-family:'DM Sans',sans-serif">
+        <h2 style="font-family:'Fredoka One',cursive;color:var(--navy);margin-bottom:6px">🎨 CSS Styling — Making It Beautiful</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">If HTML is the skeleton, CSS is the skin, clothes, and makeup. It controls every colour, font, and layout you see.</p>
+        <div style="margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:16px;margin-bottom:8px">What this lesson teaches and why it matters</h3>
+          <p style="font-size:14px;line-height:1.75">Spotify's green, YouTube's red, Roblox's blue — all defined in CSS. Without CSS, every website would look like a plain Word document. CSS lets you control backgrounds, text colour, font sizes, spacing, and borders. It's what makes websites feel like brands.</p>
+        </div>
+        <div style="background:#F0FDFB;border:1.5px solid var(--cyan);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">🔍 Line-by-line explanation</h3>
+          <div style="font-size:13px;line-height:2">
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">background: #0F1F3D;</code> — Sets the background colour using a hex code (6-digit colour code)</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">color: white;</code> — Sets the text colour (this one uses a named colour)</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">font-family: 'Segoe UI';</code> — Sets the font. The backup (sans-serif) is used if the font isn't found</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">padding: 36px;</code> — Adds 36px of inner space on all 4 sides inside the element</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">border-radius: 14px;</code> — Rounds the corners of the .card box</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">opacity: 0.8;</code> — Makes the text 80% opaque (slightly see-through)</div>
+          </div>
+        </div>
+        <div style="background:var(--slate);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">✏️ Try These Changes</h3>
+          <ol style="font-size:14px;line-height:2.2;padding-left:18px">
+            <li>Change <code>background: #0F1F3D</code> in body to <code>#2D1B69</code> (deep purple)</li>
+            <li>Change <code>color: #00C9B1</code> in h1 to <code>#FFB347</code> (orange)</li>
+            <li>Change <code>font-size: 34px</code> to a larger or smaller value</li>
+            <li>Try adding <code>border: 2px solid #00C9B1;</code> to the .card rule</li>
+          </ol>
+        </div>
+        <div style="background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:11px;padding:14px">
+          <div style="font-weight:700;color:#1E40AF;margin-bottom:6px;font-size:13px">💡 Did You Know?</div>
+          <p style="font-size:13px;line-height:1.7">CSS was invented in 1996 by Håkon Wium Lie. Before CSS, developers had to use messy HTML attributes to style everything. CSS separated "what it says" (HTML) from "how it looks" (CSS) — a game-changing idea that still drives the web today.</p>
+        </div>
+      </div>`,
       starterCode: `<!DOCTYPE html>
 <html>
 <head>
@@ -101,6 +196,35 @@ const TSACodeEditor = (() => {
       desc: 'Control layout with flexbox — the most powerful CSS tool',
       xp: 20,
       gateYr: 4,
+      explanation: `<div style="padding:20px;max-width:680px;font-family:'DM Sans',sans-serif">
+        <h2 style="font-family:'Fredoka One',cursive;color:var(--navy);margin-bottom:6px">📐 CSS Flexbox — Layouts That Actually Work</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Flexbox is how most professional websites line things up in rows and columns. Netflix's movie grid? Flexbox. YouTube's nav bar? Flexbox.</p>
+        <div style="margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:16px;margin-bottom:8px">What this lesson teaches and why it matters</h3>
+          <p style="font-size:14px;line-height:1.75">Before Flexbox, laying out elements side by side required complicated hacks with floats and positioning that often broke. Flexbox (introduced in 2009, widely supported from 2015) made layouts simple: apply one property to the parent, and child elements line up automatically.</p>
+        </div>
+        <div style="background:#F0FDFB;border:1.5px solid var(--cyan);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">🔍 Line-by-line explanation</h3>
+          <div style="font-size:13px;line-height:2">
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">display: flex;</code> — Turns the .row div into a flex container. Its children now line up in a row</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">gap: 16px;</code> — Adds 16px of space BETWEEN each child (no need for margins!)</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">flex: 1;</code> — On each .box, this means "grow equally to fill available space" — so all cards are the same width</div>
+          </div>
+        </div>
+        <div style="background:var(--slate);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">✏️ Try These Changes</h3>
+          <ol style="font-size:14px;line-height:2.2;padding-left:18px">
+            <li>Add <code>justify-content: center;</code> to .row and see the cards centre</li>
+            <li>Add <code>flex-direction: column;</code> to .row and see them stack vertically</li>
+            <li>Change <code>flex: 1</code> on the first .box to <code>flex: 2</code> — it grows twice as wide</li>
+            <li>Add a fourth &lt;div class="box"&gt; — Flexbox automatically fits it in</li>
+          </ol>
+        </div>
+        <div style="background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:11px;padding:14px">
+          <div style="font-weight:700;color:#1E40AF;margin-bottom:6px;font-size:13px">💡 Did You Know?</div>
+          <p style="font-size:13px;line-height:1.7">CSS Flexbox was officially added to the CSS specification in 2012 after years of debate. Before it, developers used float:left hacks that required "clearfix" tricks. Flexbox made those obsolete overnight — it's now one of the most-used CSS features on the web.</p>
+        </div>
+      </div>`,
       starterCode: `<!DOCTYPE html>
 <html>
 <head>
@@ -141,6 +265,39 @@ const TSACodeEditor = (() => {
       desc: 'Connect pages and add images with anchor and img tags',
       xp: 20,
       gateYr: 4,
+      explanation: `<div style="padding:20px;max-width:680px;font-family:'DM Sans',sans-serif">
+        <h2 style="font-family:'Fredoka One',cursive;color:var(--navy);margin-bottom:6px">🔗 Links & Images — Connecting the Web</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Links are literally what make the World Wide Web a "web" — and images make it beautiful. These two tags are used on every single webpage ever made.</p>
+        <div style="margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:16px;margin-bottom:8px">What this lesson teaches and why it matters</h3>
+          <p style="font-size:14px;line-height:1.75">The &lt;a&gt; tag (anchor) creates links — between your own pages, or to other websites. The &lt;img&gt; tag embeds images. Together, they transform a plain text document into an interactive, visual experience. Your portfolio page needs both.</p>
+        </div>
+        <div style="background:#F0FDFB;border:1.5px solid var(--cyan);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">🔍 Line-by-line explanation</h3>
+          <div style="font-size:13px;line-height:2">
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;a href="URL"&gt;</code> — href = "hypertext reference" — the destination URL to link to</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">target="_blank"</code> — Opens the link in a new tab (without this, the current tab navigates away)</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">&lt;img src="URL" alt="..."&gt;</code> — src = the image source URL; alt = text shown if the image fails to load</div>
+            <div><code style="background:#0D1B2E;color:#A5F3FC;padding:2px 6px;border-radius:4px">max-width: 300px;</code> — Prevents the image being wider than 300px (important for responsive design)</div>
+          </div>
+        </div>
+        <div style="background:var(--slate);border-radius:11px;padding:16px;margin-bottom:18px">
+          <h3 style="font-family:'Fredoka One',cursive;color:var(--navy);font-size:15px;margin-bottom:10px">✏️ Try These Changes — Your Portfolio Page Checklist</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Before you can call your portfolio page done, make sure it includes ALL of these:</p>
+          <div style="font-size:14px;line-height:2.4">
+            <div>☐  A &lt;h1&gt; with your name</div>
+            <div>☐  A short paragraph describing who you are</div>
+            <div>☐  At least one &lt;h2&gt; section (e.g. "My Projects" or "Skills")</div>
+            <div>☐  At least one image (use picsum.photos for a placeholder)</div>
+            <div>☐  At least one link to a website you like</div>
+            <div>☐  CSS styling (background colour, font, at least one card/box)</div>
+          </div>
+        </div>
+        <div style="background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:11px;padding:14px">
+          <div style="font-weight:700;color:#1E40AF;margin-bottom:6px;font-size:13px">💡 Did You Know?</div>
+          <p style="font-size:13px;line-height:1.7">The alt attribute on images is legally required on some websites for accessibility. Screen readers for blind users read out the alt text instead of showing the image. Writing good alt text (descriptive, not just "image1") is a professional skill that many developers skip.</p>
+        </div>
+      </div>`,
       starterCode: `<!DOCTYPE html>
 <html>
 <head>
@@ -237,6 +394,8 @@ const TSACodeEditor = (() => {
   }
 
   // ── Public API ────────────────────────────────────────────────────────────
+  // Note: mark-done is handled by markLessonDone() in index.html which uses
+  // window.TSAQuizGate to gate completion. See modules/quiz-gate.js.
   return { LESSONS, loadLesson, loadDebugChallenge };
 })();
 
