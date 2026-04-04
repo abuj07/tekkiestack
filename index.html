@@ -984,7 +984,42 @@ function _validateHTML(code) {
   // Strip HTML comments so they don't confuse the tag scanner
   const stripped = code.replace(/<!--[\s\S]*?-->/g, '');
 
-  // Scan all tags
+  // ── Pass 1: detect broken tag syntax BEFORE scanning proper tags ──────────
+  // Case A: tag name followed by > but missing the opening <
+  //   e.g. "h2>Hello<" — user forgot the leading <
+  //   Strategy: remove all valid <...> tags (including DOCTYPE), then look for knownTag> in what's left
+  const withoutValidTags = stripped
+    .replace(/<!DOCTYPE[^>]*>/gi, '')
+    .replace(/<\/?[a-zA-Z][a-zA-Z0-9]*(\s[^>]*)?\/?>/g, '');
+  const brokenOpenRe = /\b([a-zA-Z][a-zA-Z0-9]*)\s*>/g;
+  let bm;
+  while ((bm = brokenOpenRe.exec(withoutValidTags)) !== null) {
+    const t = bm[1].toLowerCase();
+    if (knownTags.has(t) && t !== '!doctype') {
+      errors.push(`Missing &lt; before <strong>${t}&gt;</strong> — did you mean <strong>&lt;${t}&gt;</strong>?`);
+    }
+  }
+
+  // Case B: a < that is NOT followed by a valid tag or comment or DOCTYPE
+  //   e.g. "gaahh<" at the end — a lone < left dangling
+  const danglingLtRe = /<(?!\/?[a-zA-Z!][a-zA-Z0-9]*[\s>\/]|!--)/g;
+  let dlm;
+  while ((dlm = danglingLtRe.exec(stripped)) !== null) {
+    errors.push(`Stray &lt; character found — every &lt; must start a proper tag like &lt;p&gt; or &lt;/p&gt;`);
+    break; // one report is enough
+  }
+
+  // Case C: tag opened with < but never closed with >
+  //   e.g. "<h2 some text" — user forgot the closing >
+  const unclosedBracketRe = /<[a-zA-Z][^>]*$/gm;
+  if (unclosedBracketRe.test(stripped)) {
+    errors.push(`A tag is missing its closing <strong>&gt;</strong> — check you have both &lt; and &gt; around every tag`);
+  }
+
+  // If broken-syntax errors already found, return early — no point stack-checking mangled code
+  if (errors.length > 0) return errors;
+
+  // ── Pass 2: tag-balance stack check ──────────────────────────────────────
   const tagRe = /<(\/?)([a-zA-Z][a-zA-Z0-9]*)(\s[^>]*)?\s*\/?>/g;
   const stack = [];
   let m;
@@ -997,7 +1032,7 @@ function _validateHTML(code) {
       errors.push(`Unknown tag &lt;${tagName}&gt; — check your spelling`);
       continue;
     }
-    if (voidTags.has(tagName)) continue; // void tags: no pairing needed
+    if (voidTags.has(tagName)) continue;
 
     if (isClose) {
       if (stack.length === 0) {
