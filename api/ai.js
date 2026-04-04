@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // Only allow POST
+  // Only allow POST requests
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   try {
     const { prompt } = req.body || {};
 
-    // Basic validation
+    // Validate input
     if (!prompt || typeof prompt !== "string") {
       return res.status(400).json({ error: "Invalid prompt" });
     }
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct",
+        model: "openchat/openchat-7b",
         messages: [
           {
             role: "system",
@@ -36,8 +36,20 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // 👇 TEMP DEBUG MODE — return full response
-    return res.status(200).json(data);
+    // Handle API errors
+    if (data.error) {
+      return res.status(500).json({
+        error: data.error.message || "OpenRouter error"
+      });
+    }
+
+    // Extract AI response safely
+    const text =
+      data?.choices?.[0]?.message?.content ||
+      data?.choices?.[0]?.text ||
+      "No response from AI";
+
+    return res.status(200).json({ text });
 
   } catch (err) {
     console.error("AI ERROR:", err);
