@@ -172,6 +172,35 @@ async function endSession() {
   renderPicker();
 }
 
+/**
+ * Navigate to the Profiles picker.
+ * If a session is active, prompt the user to end it first.
+ */
+function goToProfiles() {
+  TSA.services.sessionManager.getActiveSession().then(sess => {
+    if (!sess) { go('picker'); return; }
+    TSA.services.sessionManager.getActiveProfile().then(p => {
+      const av  = document.getElementById('eMoAv');
+      const ti  = document.getElementById('eMoTi');
+      const sub = document.querySelector('#endOvl .modal-sub');
+      if (av)  av.textContent  = p ? p.avatar : '👤';
+      if (ti)  ti.textContent  = p ? `Still logged in as ${p.name}` : 'Session still active';
+      if (sub) sub.textContent = 'End your current session first to view or switch profiles.';
+      const endBtn  = document.querySelector('#endOvl .btn-co');
+      const keepBtn = document.querySelector('#endOvl .btn-gh');
+      if (endBtn) {
+        endBtn.textContent = 'End Session & Switch';
+        endBtn.onclick = endSession;
+      }
+      if (keepBtn) {
+        keepBtn.textContent = 'Keep Going';
+        keepBtn.onclick = () => document.getElementById('endOvl')?.classList.remove('show');
+      }
+      document.getElementById('endOvl')?.classList.add('show');
+    });
+  });
+}
+
 // ── Celebration overlay ───────────────────────────────────────────────────
 /**
  * Show the celebration overlay.
@@ -460,7 +489,7 @@ async function _init() {
     TSA.services.xp             = window._TSAXpModule;
 
     // 3. Attach UI helpers to namespace
-    TSA.ui = { celebrate, closeC, go, need, promptEnd };
+    TSA.ui = { celebrate, closeC, go, need, promptEnd, goToProfiles };
 
     // 4. Offline & cookie banner
     _setupOfflineIndicator();
