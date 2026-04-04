@@ -33,17 +33,27 @@ export default async function handler(req, res) {
         }
       );
 
-      const geminiData = await geminiRes.json();
+      const geminiText = await geminiRes.text();
+
+      let geminiData;
+      try {
+        geminiData = JSON.parse(geminiText);
+      } catch {
+        console.log("Gemini non-JSON:", geminiText);
+      }
 
       const text =
         geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (text) {
-        return res.status(200).json({ text, source: "gemini" });
+        return res.status(200).json({
+          text,
+          source: "gemini"
+        });
       }
 
     } catch (err) {
-      console.log("Gemini failed");
+      console.log("Gemini failed:", err);
     }
 
     // =============================
@@ -56,10 +66,9 @@ export default async function handler(req, res) {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${process.env.OPENROUTER_KEY}`,
-              "Content-Type": "application/json",
-              "HTTP-Referer": "https://tekkiestack.com",
-              "X-Title": "TekkieStack AI Lab"
-},
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://tekkiestack.com",
+            "X-Title": "TekkieStack AI Lab"
           },
           body: JSON.stringify({
             model: "meta-llama/llama-3-8b-instruct",
@@ -78,7 +87,14 @@ export default async function handler(req, res) {
         }
       );
 
-      const orData = await orRes.json();
+      const orText = await orRes.text();
+
+      let orData;
+      try {
+        orData = JSON.parse(orText);
+      } catch {
+        console.log("OpenRouter non-JSON:", orText);
+      }
 
       const text =
         orData?.choices?.[0]?.message?.content ||
@@ -92,7 +108,7 @@ export default async function handler(req, res) {
       }
 
     } catch (err) {
-      console.log("OpenRouter failed");
+      console.log("OpenRouter failed:", err);
     }
 
     // =============================
@@ -113,7 +129,14 @@ export default async function handler(req, res) {
         }
       );
 
-      const hfData = await hfRes.json();
+      const hfText = await hfRes.text();
+
+      let hfData;
+      try {
+        hfData = JSON.parse(hfText);
+      } catch {
+        console.log("HF non-JSON:", hfText);
+      }
 
       let text = null;
 
@@ -131,7 +154,7 @@ export default async function handler(req, res) {
       }
 
     } catch (err) {
-      console.log("Hugging Face failed");
+      console.log("Hugging Face failed:", err);
     }
 
     // =============================
@@ -165,6 +188,9 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    return res.status(500).json({ error: "Server error" });
+    console.error("FATAL ERROR:", err);
+    return res.status(500).json({
+      error: "Server crashed"
+    });
   }
 }
