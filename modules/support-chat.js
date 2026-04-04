@@ -214,11 +214,6 @@ const TSASupport = (() => {
     }
   }
 
-  // ── Register route ──────────────────────────────────────────────────────
-  if (window.TSA) {
-    window.TSA.routes['support'] = renderSupport;
-  }
-
   return { renderSupport, selectQuick, submitForm, sendReport };
 })();
 

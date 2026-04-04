@@ -220,8 +220,8 @@ Format: "Score: X/10 — [feedback]"`,
     const { ok, clean, reason } = guardInput(input, yearGroup);
     if (!ok) return reason || "Please ask a coding question!";
 
-    // Layer 3: Mode gate — Y3–Y4 always offline; Y5+ can go online if flag set
-    const canGoOnline = yearGroup >= 5 && window.TSA.config.featureFlags.onlineAI === true;
+    // Layer 3: Mode gate — go online if flag is enabled (all year groups)
+    const canGoOnline = window.TSA.config.featureFlags.onlineAI === true;
     const editorCode  = document.getElementById('codeInput')?.value || '';
 
     let response;
@@ -242,7 +242,7 @@ Format: "Score: X/10 — [feedback]"`,
 
     window.TSA.services.sessionManager.getActiveProfile().then(profile => {
       const yr = profile?.yearGroup || 3;
-      const isOnline = yr >= 5 && window.TSA.config.featureFlags.onlineAI;
+      const isOnline = window.TSA.config.featureFlags.onlineAI;
 
       screen.innerHTML = `
         <div style="max-width:860px;margin:0 auto;padding:28px 18px">
@@ -250,7 +250,7 @@ Format: "Score: X/10 — [feedback]"`,
             <h2 style="font-family:'Fredoka One',cursive;font-size:29px;color:var(--navy)">🤖 AI Lab</h2>
             <p style="font-size:14px;color:var(--muted);margin-top:5px;font-weight:500">Your coding thinking partner. It helps you work things out — not do it for you.</p>
             <div style="display:inline-flex;align-items:center;gap:7px;background:${isOnline ? 'rgba(46,196,182,.12)' : 'rgba(255,179,71,.1)'};border:1px solid ${isOnline ? 'rgba(46,196,182,.3)' : 'rgba(255,179,71,.25)'};border-radius:20px;padding:5px 14px;margin-top:8px;font-size:12px;font-weight:700;color:${isOnline ? 'var(--green)' : '#92400E'}">
-              <span>${isOnline ? '🌐 Online AI Active' : '💾 Offline Mode' + (yr < 5 ? ' (Y3–Y4)' : ' — enable in settings')}</span>
+              <span>${isOnline ? '🌐 Online AI Active' : '💾 Offline Mode'}</span>
             </div>
           </div>
 
