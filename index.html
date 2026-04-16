@@ -467,8 +467,10 @@
 ════════════════════════════════════════════════════ -->
 <div id="s-onboard" class="screen">
   <div class="ob-screen">
+
+    <!-- STEP 1: Name + Avatar -->
     <div id="ob1" class="ob-card">
-      <div class="ob-step">Step 1 of 6 — Create Profile</div>
+      <div class="ob-step">Step 1 of 5 — Create Profile</div>
       <div style="font-size:58px;margin-bottom:11px">👋</div>
       <div class="ob-title">Welcome to TekkieStack!</div>
       <div class="ob-desc">You're about to start learning to build with code. Let's set up your profile.</div>
@@ -488,30 +490,11 @@
         <button class="av-btn" onclick="selectAvatar(this,'🧠')">🧠</button>
       </div>
       <button class="btn btn-cy btn-full" onclick="obStep(2)">Continue →</button>
-      <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">Are you a parent, guardian, or teacher?</div>
-        <button id="guardianToggle" onclick="toggleGuardian()" style="font-size:13px;font-weight:700;padding:8px 18px;border-radius:10px;border:2px solid rgba(255,255,255,.15);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s">🔐 Register as Guardian / Adult</button>
-      </div>
-      <div class="ob-step">Step 2 of 6 — Year Group</div>
-      <div style="font-size:58px;margin-bottom:11px">📚</div>
-      <div class="ob-title">What year are you in?</div>
-      <div class="ob-desc">This sets your learning journey — Junior (Y3–6) or Senior (Y7–11+).</div>
-      <div class="year-grid">
-        <button class="yr-btn" onclick="selectYear(this,3)">Y3</button>
-        <button class="yr-btn" onclick="selectYear(this,4)">Y4</button>
-        <button class="yr-btn" onclick="selectYear(this,5)">Y5</button>
-        <button class="yr-btn" onclick="selectYear(this,6)">Y6</button>
-        <button class="yr-btn" onclick="selectYear(this,7)">Y7</button>
-        <button class="yr-btn" onclick="selectYear(this,8)">Y8</button>
-        <button class="yr-btn" onclick="selectYear(this,9)">Y9</button>
-        <button class="yr-btn" onclick="selectYear(this,10)">Y10</button>
-        <button class="yr-btn" onclick="selectYear(this,11)">Y11</button>
-        <button class="yr-btn" onclick="selectYear(this,12)">Y12+</button>
-      </div>
-      <button class="btn btn-cy btn-full" id="ob2Btn" disabled onclick="obStep(3)">Continue →</button>
     </div>
-    <div id="ob3" class="ob-card" style="display:none">
-      <div class="ob-step">Step 3 of 6 — Set PIN</div>
+
+    <!-- STEP 2: Set PIN -->
+    <div id="ob2" class="ob-card" style="display:none">
+      <div class="ob-step">Step 2 of 5 — Set PIN</div>
       <div style="font-size:58px;margin-bottom:11px">🔐</div>
       <div class="ob-title">Choose your secret PIN</div>
       <div class="ob-desc">A 4-digit PIN keeps your profile private on a shared device.</div>
@@ -530,10 +513,33 @@
         <input class="pin-box" maxlength="1" type="password" inputmode="numeric" id="pin7" oninput="onPinInput(7)">
       </div>
       <div id="pinSetErr" style="font-size:13px;color:var(--coral);font-weight:600;min-height:17px;margin-bottom:11px"></div>
-      <button class="btn btn-cy btn-full" id="ob3Btn" disabled onclick="obStep(4)">Set PIN &amp; Continue →</button>
+      <button class="btn btn-cy btn-full" id="ob2Btn" disabled onclick="obStep(3)">Set PIN &amp; Continue →</button>
     </div>
+
+    <!-- STEP 3: Year Group -->
+    <div id="ob3" class="ob-card" style="display:none">
+      <div class="ob-step">Step 3 of 5 — Year Group</div>
+      <div style="font-size:58px;margin-bottom:11px">📚</div>
+      <div class="ob-title">What year are you in?</div>
+      <div class="ob-desc">This sets your learning journey — Junior (Y3–6) or Senior (Y7–11+).</div>
+      <div class="year-grid">
+        <button class="yr-btn" onclick="selectYear(this,3)">Y3</button>
+        <button class="yr-btn" onclick="selectYear(this,4)">Y4</button>
+        <button class="yr-btn" onclick="selectYear(this,5)">Y5</button>
+        <button class="yr-btn" onclick="selectYear(this,6)">Y6</button>
+        <button class="yr-btn" onclick="selectYear(this,7)">Y7</button>
+        <button class="yr-btn" onclick="selectYear(this,8)">Y8</button>
+        <button class="yr-btn" onclick="selectYear(this,9)">Y9</button>
+        <button class="yr-btn" onclick="selectYear(this,10)">Y10</button>
+        <button class="yr-btn" onclick="selectYear(this,11)">Y11</button>
+        <button class="yr-btn" onclick="selectYear(this,12)">Y12+</button>
+      </div>
+      <button class="btn btn-cy btn-full" id="ob3Btn" disabled onclick="obStep(4)">Continue →</button>
+    </div>
+
+    <!-- STEP 4: HTML Starter Activity -->
     <div id="ob4" class="ob-card" style="display:none">
-      <div class="ob-step">Step 4 of 6 — Starter Build</div>
+      <div class="ob-step">Step 4 of 5 — Starter Build</div>
       <div style="font-size:58px;margin-bottom:9px">✨</div>
       <div class="ob-title">Build your first web page!</div>
       <div class="ob-desc">Replace ___ with your name and watch it appear live.</div>
@@ -549,6 +555,8 @@
       <div class="starter-preview" id="starterPreview"><span style="color:var(--muted);font-size:14px;font-family:'DM Sans',sans-serif">Replace ___ above to see it appear...</span></div>
       <button class="btn btn-cy btn-full" id="ob4Btn" disabled onclick="obStep(5)">I did it! →</button>
     </div>
+
+    <!-- STEP 5: Celebration -->
     <div id="ob5" class="ob-card" style="display:none">
       <div style="font-size:70px;display:block;margin-bottom:12px;animation:bnc .55s ease">🎉</div>
       <div class="ob-title">You're a builder!</div>
@@ -556,6 +564,7 @@
       <div style="font-family:'Fredoka One',cursive;font-size:26px;color:var(--cyan);margin-bottom:20px">+25 XP earned!</div>
       <button class="btn btn-cy btn-full" onclick="finishOnboarding()">Go to my Dashboard →</button>
     </div>
+
   </div>
 </div>
 
@@ -908,11 +917,6 @@ function resetOnboarding() {
   const firstAv = document.querySelector('.av-btn');
   if (firstAv) firstAv.classList.add('sel');
 
-  // Year grid
-  document.querySelectorAll('.yr-btn').forEach(b => b.classList.remove('sel'));
-  const ob2Btn = document.getElementById('ob2Btn');
-  if (ob2Btn) ob2Btn.disabled = true;
-
   // PIN fields
   for (let i = 0; i < 8; i++) {
     const pinEl = document.getElementById('pin' + i);
@@ -920,6 +924,11 @@ function resetOnboarding() {
   }
   const pinSetErr = document.getElementById('pinSetErr');
   if (pinSetErr) pinSetErr.textContent = '';
+  const ob2Btn = document.getElementById('ob2Btn');
+  if (ob2Btn) ob2Btn.disabled = true;
+
+  // Year grid
+  document.querySelectorAll('.yr-btn').forEach(b => b.classList.remove('sel'));
   const ob3Btn = document.getElementById('ob3Btn');
   if (ob3Btn) ob3Btn.disabled = true;
 
@@ -948,7 +957,7 @@ function selectAvatar(el, em) {
 function selectYear(el, y) {
   document.querySelectorAll('.yr-btn').forEach(b => b.classList.remove('sel'));
   el.classList.add('sel'); _obYear = y;
-  document.getElementById('ob2Btn').disabled = false;
+  document.getElementById('ob3Btn').disabled = false;
 }
 function onPinInput(i) {
   const el = document.getElementById('pin'+i);
@@ -957,9 +966,9 @@ function onPinInput(i) {
   const p1 = _pinVals.slice(0,4).join(''), p2 = _pinVals.slice(4,8).join('');
   const err = document.getElementById('pinSetErr');
   if (p1.length === 4 && p2.length === 4) {
-    if (p1 === p2) { err.textContent = ''; document.getElementById('ob3Btn').disabled = false; }
-    else { err.textContent = "PINs don't match — try again"; document.getElementById('ob3Btn').disabled = true; }
-  } else { document.getElementById('ob3Btn').disabled = true; }
+    if (p1 === p2) { err.textContent = ''; document.getElementById('ob2Btn').disabled = false; }
+    else { err.textContent = "PINs don't match — try again"; document.getElementById('ob2Btn').disabled = true; }
+  } else { document.getElementById('ob2Btn').disabled = true; }
 }
 function starterPreview() {
   const v = document.getElementById('starterInput').value;
