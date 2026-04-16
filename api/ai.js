@@ -10,12 +10,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid prompt" });
     }
 
+    // Log which keys are present (not their values)
+    console.log("ENV CHECK — GEMINI_KEY present:", !!process.env.GEMINI_KEY);
+    console.log("ENV CHECK — ANTHROPIC_API_KEY present:", !!process.env.ANTHROPIC_API_KEY);
+    console.log("ENV CHECK — OPENROUTER_KEY present:", !!process.env.OPENROUTER_KEY);
+
     // =============================
     // 1️⃣ GEMINI 2.5 PRO (PRIMARY)
     // =============================
     try {
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-03-25:generateContent?key=${process.env.GEMINI_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${process.env.GEMINI_KEY}`,
         {
           method: "POST",
           headers: {
@@ -36,7 +41,8 @@ export default async function handler(req, res) {
       );
 
       const geminiText = await geminiRes.text();
-      console.log("GEMINI RAW:", geminiText);
+      console.log("GEMINI STATUS:", geminiRes.status);
+      console.log("GEMINI RAW:", geminiText.substring(0, 500));
 
       let geminiData;
       try {
@@ -77,7 +83,8 @@ export default async function handler(req, res) {
       );
 
       const anthropicText = await anthropicRes.text();
-      console.log("ANTHROPIC RAW:", anthropicText);
+      console.log("ANTHROPIC STATUS:", anthropicRes.status);
+      console.log("ANTHROPIC RAW:", anthropicText.substring(0, 500));
 
       let anthropicData;
       try {
