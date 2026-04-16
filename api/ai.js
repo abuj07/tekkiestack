@@ -11,7 +11,51 @@ export default async function handler(req, res) {
     }
 
     // =============================
-    // 1️⃣ ANTHROPIC (PRIMARY)
+    // 1️⃣ GEMINI 2.5 PRO (PRIMARY)
+    // =============================
+    try {
+      const geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-03-25:generateContent?key=${process.env.GEMINI_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: system || "You are a friendly coding tutor for school students. Give helpful hints — never write the full solution. Focus only on HTML, CSS, and JavaScript. Keep responses concise." }]
+            },
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: prompt }]
+              }
+            ]
+          })
+        }
+      );
+
+      const geminiText = await geminiRes.text();
+      console.log("GEMINI RAW:", geminiText);
+
+      let geminiData;
+      try {
+        geminiData = JSON.parse(geminiText);
+      } catch {}
+
+      const text =
+        geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (text) {
+        return res.status(200).json({ text, source: "gemini" });
+      }
+
+    } catch (err) {
+      console.log("Gemini failed:", err);
+    }
+
+    // =============================
+    // 2️⃣ CLAUDE HAIKU 4.5 (SECONDARY)
     // =============================
     try {
       const anthropicRes = await fetch(
@@ -52,50 +96,6 @@ export default async function handler(req, res) {
 
     } catch (err) {
       console.log("Anthropic failed:", err);
-    }
-
-    // =============================
-    // 2️⃣ GEMINI (FALLBACK)
-    // =============================
-    try {
-      const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: prompt }]
-              }
-            ]
-          })
-        }
-      );
-
-      const geminiText = await geminiRes.text();
-      console.log("GEMINI RAW:", geminiText);
-
-      let geminiData;
-      try {
-        geminiData = JSON.parse(geminiText);
-      } catch {}
-
-      const text =
-        geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (text) {
-        return res.status(200).json({
-          text,
-          source: "gemini"
-        });
-      }
-
-    } catch (err) {
-      console.log("Gemini failed:", err);
     }
 
     // =============================
