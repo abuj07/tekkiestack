@@ -488,8 +488,10 @@
         <button class="av-btn" onclick="selectAvatar(this,'🧠')">🧠</button>
       </div>
       <button class="btn btn-cy btn-full" onclick="obStep(2)">Continue →</button>
-    </div>
-    <div id="ob2" class="ob-card" style="display:none">
+      <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">Are you a parent, guardian, or teacher?</div>
+        <button id="guardianToggle" onclick="toggleGuardian()" style="font-size:13px;font-weight:700;padding:8px 18px;border-radius:10px;border:2px solid rgba(255,255,255,.15);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s">🔐 Register as Guardian / Adult</button>
+      </div>
       <div class="ob-step">Step 2 of 6 — Year Group</div>
       <div style="font-size:58px;margin-bottom:11px">📚</div>
       <div class="ob-title">What year are you in?</div>
@@ -878,9 +880,10 @@
 
 <script>
 // ── Onboarding state ────────────────────────────────────────────────────
-let _obAvatar = '🚀';
-let _obYear   = null;
-let _pinVals  = Array(8).fill('');   // let (not const) so resetOnboarding can clear it
+let _obAvatar   = '🚀';
+let _obYear     = null;
+let _pinVals    = Array(8).fill('');   // let (not const) so resetOnboarding can clear it
+let _obGuardian = false;               // true when registering as a parent/guardian/teacher
 
 /**
  * resetOnboarding — called every time the onboarding screen opens.
@@ -889,9 +892,10 @@ let _pinVals  = Array(8).fill('');   // let (not const) so resetOnboarding can c
  * and the "You're a builder" duplicate-profile bug.
  */
 function resetOnboarding() {
-  _obAvatar = '🚀';
-  _obYear   = null;
-  _pinVals  = Array(8).fill('');
+  _obAvatar   = '🚀';
+  _obYear     = null;
+  _pinVals    = Array(8).fill('');
+  _obGuardian = false;
 
   // Name field
   const nameEl = document.getElementById('obName');
@@ -979,13 +983,8 @@ async function finishOnboarding() {
   }
   const sanitisedName = nameCheck.value;
 
-  // Validate PIN
+  // PIN — students can choose any 4-digit PIN (no strength restriction)
   const pin = _pinVals.slice(0,4).join('') || '0000';
-  const pinCheck = window.TSASecurity ? TSASecurity.validatePIN(pin) : { ok: true, error: '' };
-  if (!pinCheck.ok) {
-    alert(pinCheck.error);
-    return;
-  }
   try {
     const profile = await TSA.services.sessionManager.createProfile({
       name: sanitisedName, avatar: _obAvatar, yearGroup: _obYear || 3, pin
