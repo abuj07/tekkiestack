@@ -1,0 +1,11 @@
+#!/bin/sh
+# Auto-bump CACHE_VERSION in sw.js on every commit.
+# Format: ts-YYYYMMDD-HHMMSS — always unique, human-readable.
+
+VERSION="ts-$(date +%Y%m%d-%H%M%S)"
+
+sed -i "s/const CACHE_VERSION = '.*';/const CACHE_VERSION = '${VERSION}';/" sw.js
+
+git add sw.js
+
+echo "[hook] sw.js cache version → ${VERSION}"
