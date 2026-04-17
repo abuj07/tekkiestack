@@ -372,6 +372,110 @@ async function _verifyPin() {
   }
 }
 
+// ── Guardian PIN Reset ────────────────────────────────────────────────────
+let _grStep = 1;   // 1 = enter new PIN, 2 = confirm
+let _grPin1 = '';  // first entry stored here
+let _grBuf  = '';  // current numpad input
+
+function openGuardianReset() {
+  if (!_pinTarget) return;
+  _grStep = 1;
+  _grPin1 = '';
+  _grBuf  = '';
+  _grUpdateDots();
+  document.getElementById('grKidName').textContent = _pinTarget.name;
+  document.getElementById('grStep').textContent    = 'Step 1 of 2 — Enter new PIN';
+  document.getElementById('grErr').textContent     = '';
+  closePinModal();
+  document.getElementById('grOvl')?.classList.add('show');
+}
+
+function closeGuardianReset() {
+  document.getElementById('grOvl')?.classList.remove('show');
+  _grBuf  = '';
+  _grPin1 = '';
+  _grStep = 1;
+}
+
+function gpk(digit) {
+  if (_grBuf.length >= 4) return;
+  _grBuf += digit;
+  _grUpdateDots();
+  if (_grBuf.length === 4) setTimeout(_grNext, 200);
+}
+
+function gpd_() {
+  _grBuf = _grBuf.slice(0, -1);
+  _grUpdateDots();
+  document.getElementById('grErr').textContent = '';
+  document.querySelectorAll('#grOvl .pd').forEach(d => d.classList.remove('err'));
+}
+
+function _grUpdateDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById(`gd${i}`);
+    if (d) d.classList.toggle('on', i < _grBuf.length);
+  }
+}
+
+async function _grNext() {
+  if (_grStep === 1) {
+    // Validate strength before accepting
+    if (window.TSASecurity) {
+      const { ok, error } = TSASecurity.validatePIN(_grBuf);
+      if (!ok) {
+        document.getElementById('grErr').textContent = error;
+        document.querySelectorAll('#grOvl .pd').forEach(d => d.classList.add('err'));
+        setTimeout(() => {
+          _grBuf = '';
+          _grUpdateDots();
+          document.querySelectorAll('#grOvl .pd').forEach(d => d.classList.remove('err'));
+          document.getElementById('grErr').textContent = '';
+        }, 900);
+        return;
+      }
+    }
+    _grPin1 = _grBuf;
+    _grBuf  = '';
+    _grStep = 2;
+    _grUpdateDots();
+    document.getElementById('grStep').textContent = 'Step 2 of 2 — Confirm new PIN';
+  } else {
+    if (_grBuf !== _grPin1) {
+      document.getElementById('grErr').textContent = "PINs don't match — start again.";
+      document.querySelectorAll('#grOvl .pd').forEach(d => d.classList.add('err'));
+      setTimeout(() => {
+        _grBuf  = '';
+        _grPin1 = '';
+        _grStep = 1;
+        _grUpdateDots();
+        document.getElementById('grStep').textContent = 'Step 1 of 2 — Enter new PIN';
+        document.querySelectorAll('#grOvl .pd').forEach(d => d.classList.remove('err'));
+        document.getElementById('grErr').textContent = '';
+      }, 900);
+      return;
+    }
+    await _grSave(_grBuf);
+  }
+}
+
+async function _grSave(newPin) {
+  try {
+    const deviceId = window.TSA.config.deviceId;
+    const pinHash  = await TSA.services.sessionManager.hashPIN(newPin, deviceId);
+    await TSA.services.sessionManager.updateProfile(_pinTarget.profileId, { pinHash });
+    if (window.TSASecurity) {
+      TSASecurity.clearLockout(_pinTarget.profileId);
+      TSASecurity.auditLog('pin_reset', { profileId: _pinTarget.profileId });
+    }
+    closeGuardianReset();
+    // Re-open PIN modal so the kid can log in straight away
+    openPinModal(_pinTarget);
+  } catch {
+    document.getElementById('grErr').textContent = 'Something went wrong. Please try again.';
+  }
+}
+
 // ── Dashboard render ──────────────────────────────────────────────────────
 function _renderDashboard(profile) {
   const el = (id) => document.getElementById(id);

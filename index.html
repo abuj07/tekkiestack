@@ -75,7 +75,38 @@
       <button class="npb" onclick="pk('0')">0</button>
       <button class="npb del" onclick="pd_()">⌫</button>
     </div>
+    <div class="modal-link forgot-pin-link" onclick="openGuardianReset()">Forgot PIN?</div>
     <div class="modal-link" onclick="closePinModal()">Cancel</div>
+  </div>
+</div>
+
+<!-- ── Guardian PIN Reset Modal ──────────────────────────────────────────── -->
+<div class="overlay" id="grOvl">
+  <div class="modal">
+    <span class="modal-avatar">🔐</span>
+    <div class="modal-title">Guardian Reset</div>
+    <div class="modal-sub">Ask a parent or teacher to set a new PIN for <strong id="grKidName"></strong></div>
+    <div class="gr-step" id="grStep">Step 1 of 2 — Enter new PIN</div>
+    <div class="pin-dots">
+      <div class="pd" id="gd0"></div><div class="pd" id="gd1"></div>
+      <div class="pd" id="gd2"></div><div class="pd" id="gd3"></div>
+    </div>
+    <div class="pin-err" id="grErr"></div>
+    <div class="numpad">
+      <button class="npb" onclick="gpk('1')">1</button>
+      <button class="npb" onclick="gpk('2')">2</button>
+      <button class="npb" onclick="gpk('3')">3</button>
+      <button class="npb" onclick="gpk('4')">4</button>
+      <button class="npb" onclick="gpk('5')">5</button>
+      <button class="npb" onclick="gpk('6')">6</button>
+      <button class="npb" onclick="gpk('7')">7</button>
+      <button class="npb" onclick="gpk('8')">8</button>
+      <button class="npb" onclick="gpk('9')">9</button>
+      <button class="npb" style="visibility:hidden"></button>
+      <button class="npb" onclick="gpk('0')">0</button>
+      <button class="npb del" onclick="gpd_()">⌫</button>
+    </div>
+    <div class="modal-link" onclick="closeGuardianReset()">Cancel</div>
   </div>
 </div>
 
