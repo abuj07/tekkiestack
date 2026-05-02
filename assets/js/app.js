@@ -52,9 +52,29 @@ function go(name) {
     document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
     const nb = document.getElementById(`nb-${name}`);
     if (nb) nb.classList.add('on');
-    // Call screen's render function if registered
+
+    // Call screen's render function if registered. Fall back to module
+    // globals so a missed route registration (e.g. cached older module)
+    // still renders the screen.
+    let rendered = false;
     if (TSA.routes[name]) {
-      try { TSA.routes[name](); } catch(e) { console.error(`[Router] Error rendering ${name}:`, e); }
+      try { TSA.routes[name](); rendered = true; }
+      catch(e) { console.error(`[Router] Error rendering ${name}:`, e); }
+    }
+    if (!rendered) {
+      // Module-global fallbacks
+      const fallbacks = {
+        games:   () => window.TSAGames?.renderHub?.(),
+        builder: () => window.TSAGameBuilder?.renderHub?.(),
+        ai:      () => window.TSAAILab?.renderAILab?.(),
+        junior:  () => window.TSAJunior?.renderJuniorJourney?.(),
+        senior:  () => window.TSASenior?.renderSeniorJourney?.(),
+        typing:  () => window.TSATyping?.init?.(),
+      };
+      if (fallbacks[name]) {
+        try { fallbacks[name](); }
+        catch(e) { console.error(`[Router] Fallback failed for ${name}:`, e); }
+      }
     }
   } else {
     console.warn('[Router] Unknown screen:', name);
