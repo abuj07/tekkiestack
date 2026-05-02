@@ -448,8 +448,11 @@ async function _verifyPin() {
 }
 
 // ── Guardian PIN Reset ────────────────────────────────────────────────────
-// Modes: 'setup-1' | 'setup-2' | 'verify' | 'reset-1' | 'reset-2'
+// Modes: 'setup-1' | 'setup-2' | 'verify' | 'reset-1' | 'reset-2' | 'locked'
 const _GK = 'ts_guardian_hash';
+const _GLOCK_KEY = 'ts_guardian_lock';   // { count, lockedUntil }
+const GLOCK_THRESHOLD = 5;
+const GLOCK_DURATION  = 60000;            // 60s — slightly stricter than PIN lockout
 
 async function _hashGuardianCode(code) {
   const data = new TextEncoder().encode('guardian:' + code);
@@ -457,15 +460,41 @@ async function _hashGuardianCode(code) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
+function _grLockState() {
+  try {
+    const raw = localStorage.getItem(_GLOCK_KEY);
+    if (!raw) return { count: 0, lockedUntil: 0 };
+    return JSON.parse(raw);
+  } catch { return { count: 0, lockedUntil: 0 }; }
+}
+function _grLockSave(state) {
+  try { localStorage.setItem(_GLOCK_KEY, JSON.stringify(state)); } catch {}
+}
+function _grLockClear() {
+  try { localStorage.removeItem(_GLOCK_KEY); } catch {}
+}
+function _grLockRemaining() {
+  const s = _grLockState();
+  if (!s.lockedUntil || s.lockedUntil <= Date.now()) return 0;
+  return Math.ceil((s.lockedUntil - Date.now()) / 1000);
+}
+
 let _grMode = 'verify';
 let _grPin1 = '';
 let _grBuf  = '';
+let _grLockTimer = null;
 
 function openGuardianReset() {
   if (!_pinTarget) return;
   _grBuf  = '';
   _grPin1 = '';
-  _grMode = localStorage.getItem(_GK) ? 'verify' : 'setup-1';
+
+  // Locked out from too many wrong guardian-passcode attempts? Stay locked.
+  if (_grLockRemaining() > 0) {
+    _grMode = 'locked';
+  } else {
+    _grMode = localStorage.getItem(_GK) ? 'verify' : 'setup-1';
+  }
   _grUpdateDots();
   _grRender();
   closePinModal();
@@ -477,16 +506,26 @@ function closeGuardianReset() {
   _grBuf  = '';
   _grPin1 = '';
   _grMode = 'verify';
+  if (_grLockTimer) { clearInterval(_grLockTimer); _grLockTimer = null; }
 }
 
 function _grRender() {
   const name = window.TSASecurity ? TSASecurity.esc(_pinTarget?.name || '') : (_pinTarget?.name || '');
   const map = {
-    'setup-1': { title: 'Guardian Setup',    sub: 'Create a 4-digit guardian passcode. Only parents or teachers should know this.',               step: 'Create guardian passcode' },
+    'setup-1': {
+      title: 'Parent / Teacher Step',
+      sub: `<strong>This step is for a parent or teacher.</strong><br>Create a 4-digit guardian passcode for <strong>${name}</strong>. Children should NOT do this alone, the passcode lets the adult unlock the device if the child forgets their PIN.`,
+      step: 'Create guardian passcode',
+    },
     'setup-2': { title: 'Guardian Setup',    sub: 'Enter it again to confirm.',                                                                    step: 'Confirm guardian passcode' },
     'verify':  { title: 'Guardian Required', sub: `Enter the guardian passcode to reset <strong>${name}</strong>'s PIN.`,                          step: 'Enter guardian passcode' },
     'reset-1': { title: 'New PIN',           sub: `Set a new PIN for <strong>${name}</strong>.`,                                                   step: 'Step 1 of 2: Enter new PIN' },
     'reset-2': { title: 'New PIN',           sub: `Set a new PIN for <strong>${name}</strong>.`,                                                   step: 'Step 2 of 2: Confirm new PIN' },
+    'locked':  {
+      title: 'Locked Out',
+      sub: `Too many wrong guardian passcode attempts. Wait <strong><span id="grLockSec">${_grLockRemaining()}</span></strong> seconds and try again.`,
+      step: 'Cooling down',
+    },
   };
   const cfg = map[_grMode];
   const el = id => document.getElementById(id);
@@ -494,9 +533,30 @@ function _grRender() {
   if (el('grSub'))   el('grSub').innerHTML     = cfg.sub;
   if (el('grStep'))  el('grStep').textContent  = cfg.step;
   if (el('grErr'))   el('grErr').textContent   = '';
+
+  // While locked, run a 1Hz countdown that auto-exits when the lock expires.
+  if (_grLockTimer) { clearInterval(_grLockTimer); _grLockTimer = null; }
+  if (_grMode === 'locked') {
+    _grLockTimer = setInterval(() => {
+      const left = _grLockRemaining();
+      const span = document.getElementById('grLockSec');
+      if (span) span.textContent = left;
+      if (left <= 0) {
+        clearInterval(_grLockTimer); _grLockTimer = null;
+        _grLockClear();
+        // Drop back into normal flow
+        _grMode = localStorage.getItem(_GK) ? 'verify' : 'setup-1';
+        _grBuf = '';
+        _grUpdateDots();
+        _grRender();
+      }
+    }, 1000);
+  }
 }
 
 function gpk(digit) {
+  // While locked out, ignore digit input entirely.
+  if (_grMode === 'locked') return;
   if (_grBuf.length >= 4) return;
   _grBuf += digit;
   _grUpdateDots();
@@ -504,9 +564,11 @@ function gpk(digit) {
 }
 
 function gpd_() {
+  if (_grMode === 'locked') return;
   _grBuf = _grBuf.slice(0, -1);
   _grUpdateDots();
-  document.getElementById('grErr').textContent = '';
+  const err = document.getElementById('grErr');
+  if (err) err.textContent = '';
   document.querySelectorAll('#grOvl .pd').forEach(d => d.classList.remove('err'));
 }
 
@@ -531,6 +593,9 @@ function _grShakeErr(msg, nextMode) {
 }
 
 async function _grNext() {
+  // Locked? Bail out immediately so we never run hash compares while locked.
+  if (_grMode === 'locked') return;
+
   switch (_grMode) {
     case 'setup-1': {
       const { ok, error } = TSASecurity.validatePIN(_grBuf);
@@ -542,13 +607,37 @@ async function _grNext() {
     case 'setup-2': {
       if (_grBuf !== _grPin1) { _grShakeErr("Codes don't match. Try again.", 'setup-1'); return; }
       localStorage.setItem(_GK, await _hashGuardianCode(_grBuf));
+      // First-time setup audit so a parent reviewing logs can see this.
+      if (window.TSASecurity) TSASecurity.auditLog('guardian_setup', {});
       _grBuf = ''; _grPin1 = ''; _grMode = 'reset-1';
       _grUpdateDots(); _grRender();
       break;
     }
     case 'verify': {
+      // Re-check lockout right before we hash, in case the user kept the
+      // modal open across a lockout window from another flow.
+      if (_grLockRemaining() > 0) {
+        _grMode = 'locked'; _grBuf = ''; _grUpdateDots(); _grRender(); return;
+      }
       const hash = await _hashGuardianCode(_grBuf);
-      if (hash !== localStorage.getItem(_GK)) { _grShakeErr('Wrong passcode, try again.'); return; }
+      if (hash !== localStorage.getItem(_GK)) {
+        const state = _grLockState();
+        state.count = (state.count || 0) + 1;
+        if (state.count >= GLOCK_THRESHOLD) {
+          state.lockedUntil = Date.now() + GLOCK_DURATION;
+          state.count = 0;
+          _grLockSave(state);
+          if (window.TSASecurity) TSASecurity.auditLog('guardian_lockout', {});
+          _grBuf = ''; _grMode = 'locked'; _grUpdateDots(); _grRender();
+          return;
+        }
+        _grLockSave(state);
+        const left = GLOCK_THRESHOLD - state.count;
+        _grShakeErr(`Wrong passcode. ${left} attempt${left === 1 ? '' : 's'} left before lockout.`);
+        return;
+      }
+      // Correct, clear failed-attempt counter.
+      _grLockClear();
       _grBuf = ''; _grMode = 'reset-1';
       _grUpdateDots(); _grRender();
       break;
@@ -577,10 +666,19 @@ async function _grSave(newPin) {
       TSASecurity.clearLockout(_pinTarget.profileId);
       TSASecurity.auditLog('pin_reset', { profileId: _pinTarget.profileId });
     }
+    const targetName = _pinTarget?.name || '';
     closeGuardianReset();
+    // Show success feedback so the user knows the reset actually worked,
+    // then reopen the PIN modal so they can sign in with the new PIN.
+    if (typeof celebrate === 'function') {
+      celebrate('check_circle', 'PIN updated!', `${targetName} can now sign in with the new PIN.`, '');
+    }
     openPinModal(_pinTarget);
-  } catch {
-    document.getElementById('grErr').textContent = 'Something went wrong. Please try again.';
+  } catch (err) {
+    // Failure recovery: don't leave the user stuck with a full buffer.
+    // Reset to reset-1 so they can re-enter the new PIN cleanly.
+    console.error('[Guardian] PIN save failed:', err);
+    _grShakeErr("Something went wrong saving the new PIN. Please try again.", 'reset-1');
   }
 }
 
