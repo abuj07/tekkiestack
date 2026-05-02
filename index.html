@@ -31,7 +31,8 @@
     <button class="nb" id="nb-senior"    onclick="need('senior')">Senior Journey</button>
     <button class="nb" id="nb-typing"    onclick="need('typing')">Typing</button>
     <button class="nb" id="nb-editor"    onclick="need('editor')">Code Editor</button>
-    <button class="nb" id="nb-games"     onclick="need('games')">Games</button>
+    <button class="nb" id="nb-games"     onclick="need('games')">Arcade</button>
+    <button class="nb" id="nb-builder"   onclick="need('builder')">Build a Game</button>
     <button class="nb" id="nb-ai"        onclick="need('ai')">AI Lab</button>
     <button class="nb" id="nb-tipjar"    onclick="go('tipjar')">Tip Jar ☕</button>
     <button class="nb" id="nb-support"   onclick="go('support')">Support</button>
@@ -139,13 +140,30 @@
 ════════════════════════════════════════════════════ -->
 <main id="main-content"><div id="s-picker" class="screen on">
   <div class="picker">
-    <img src="assets/img/logo.png" class="picker-logo" alt="TekkieStack">
-    <div class="picker-title">Who's learning today?</div>
+    <!-- Floating decorative shapes (CSS-only, low CPU, respects reduced-motion) -->
+    <div class="picker-shapes" aria-hidden="true">
+      <span class="picker-shape ps-1"></span>
+      <span class="picker-shape ps-2"></span>
+      <span class="picker-shape ps-3"></span>
+      <span class="picker-shape ps-4"></span>
+      <span class="picker-shape ps-5"></span>
+      <span class="picker-shape ps-6"></span>
+    </div>
+
+    <!-- Bobbing mascot with cyan glow ring -->
+    <div class="picker-mascot" aria-hidden="true">
+      <span class="picker-mascot-glow"></span>
+      <span class="ts-i ts-i-rocket"></span>
+    </div>
+
+    <div class="picker-greeting" id="pickerGreeting">Welcome back!</div>
+    <h1 class="picker-title"><span class="picker-title-grad">Who's coding</span> <span class="picker-title-spark">today<span class="picker-spark" aria-hidden="true"></span></span>?</h1>
     <div class="picker-sub" id="pickerSub">Tap your profile to get started</div>
+
     <div class="profiles-grid" id="profilesGrid"></div>
     <div class="picker-ft">Each profile is protected by a personal 4-digit PIN</div>
     <div class="picker-tip-nudge" onclick="go('tipjar')">
-      <span>☕</span>
+      <span class="ts-i ts-i-coffee" aria-hidden="true"></span>
       <span>TekkieStack is <strong>free for every child</strong>. If you find it useful, <strong>buy us a coffee</strong></span>
     </div>
   </div>
@@ -391,6 +409,11 @@
      SCREEN: GAMES (Phase F)
 ════════════════════════════════════════════════════ -->
 <div id="s-games" class="screen"></div>
+
+<!-- ════════════════════════════════════════════════════
+     SCREEN: BUILD A GAME
+════════════════════════════════════════════════════ -->
+<div id="s-builder" class="screen"></div>
 
 <!-- ════════════════════════════════════════════════════
      SCREEN: TIP JAR
@@ -961,6 +984,7 @@
 <script src="modules/quiz-gate.js"></script>
 <script src="modules/engagement.js"></script>
 <script src="modules/games.js"></script>
+<script src="modules/game-builder.js"></script>
 
 <script>
 // ── Onboarding state ────────────────────────────────────────────────────

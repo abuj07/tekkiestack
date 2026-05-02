@@ -4,7 +4,7 @@
  * Author: Aperintel Ltd
  */
 
-const CACHE_VERSION = 'ts-20260502-121148';  // bump this string on every production deploy
+const CACHE_VERSION = 'ts-20260502-124836';  // bump this string on every production deploy
 const SHELL_ASSETS = [
   './',
   './index.html',
@@ -26,6 +26,7 @@ const SHELL_ASSETS = [
   './modules/engagement.js',
   './modules/quiz-gate.js',
   './modules/games.js',
+  './modules/game-builder.js',
   './modules/activities.js',
   // Google Fonts, cached on first fetch
   'https://fonts.googleapis.com/css2?family=Fredoka+One&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap'

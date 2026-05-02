@@ -252,8 +252,19 @@ async function renderPicker() {
   const storage = TSA.storage;
   const grid    = document.getElementById('profilesGrid');
   const sub     = document.getElementById('pickerSub');
+  const greet   = document.getElementById('pickerGreeting');
   const picker  = document.querySelector('.picker');
   if (!grid) return;
+
+  // Time-of-day greeting (set once per render)
+  if (greet) {
+    const h = new Date().getHours();
+    let phrase = 'Hello';
+    if (h < 12) phrase = 'Good morning';
+    else if (h < 18) phrase = 'Good afternoon';
+    else phrase = 'Good evening';
+    greet.textContent = phrase + '!';
+  }
 
   // Filter to valid profiles only
   const all = await storage.getAll('profiles_store');
