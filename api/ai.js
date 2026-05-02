@@ -225,30 +225,17 @@ export default async function handler(req, res) {
     }
 
     // =============================
-    // 5️⃣ LOCAL FALLBACK
+    // 5️⃣ ALL PROVIDERS FAILED
     // =============================
-    const lower = prompt.toLowerCase();
-
-    let fallback =
-      "I'm here to help! Try asking about coding or your project 😊";
-
-    if (lower.includes("html")) {
-      fallback =
-        "HTML is the structure of a webpage. Think of it like the skeleton that holds everything together.";
-    } else if (lower.includes("css")) {
-      fallback =
-        "CSS controls how a webpage looks: colours, layouts, and styles.";
-    } else if (lower.includes("javascript")) {
-      fallback =
-        "JavaScript makes websites interactive, like buttons, animations, and logic.";
-    } else if (lower.includes("bug") || lower.includes("error")) {
-      fallback =
-        "Try checking your code step by step. What line is causing the issue?";
-    }
-
-    return res.status(200).json({
-      text: scrubStyle(fallback),
-      source: "local"
+    // Return 502 so the client falls back to its tool-aware offlineResponse
+    // (in modules/ai-lab.js). That fallback knows whether the user is in
+    // codeHelper, codeDetective, or promptTrainer mode, and picks an
+    // appropriate hint from OFFLINE_HINTS — far better than keyword-matching
+    // on the prompt body, which mis-fires when the editor's starter code
+    // contains words like "html".
+    return res.status(502).json({
+      error: "All AI providers unavailable",
+      retryable: true
     });
 
   } catch (err) {

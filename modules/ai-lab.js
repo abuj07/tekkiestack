@@ -127,6 +127,27 @@ const TSAAILab = (() => {
     const responses = OFFLINE_HINTS[tool];
     if (!responses) return "I'm not sure how to help with that. Try asking a coding question!";
 
+    // Friendly greeting detector — kids will often say "hi" / "hello" first.
+    // Without this, they'd get a random debugging hint that feels like a
+    // non-sequitur. Match short greeting-only inputs.
+    const trimmed = (input || '').trim().toLowerCase();
+    const isGreeting =
+      trimmed.length <= 20 &&
+      /^(hi|hello|hey|hiya|yo|sup|howdy|good (morning|afternoon|evening))[\s!.?]*$/i.test(trimmed);
+    if (isGreeting) {
+      const greetings = {
+        codeHelper:    "Hi! Ask me about a part of your code that's confusing you, or paste in something you're stuck on. I'll give you a hint to figure it out yourself.",
+        codeDetective: "Hi there! Paste your buggy code in the editor and tell me what's going wrong. I'll point you to the bug, but you fix it.",
+        promptTrainer: "Hello! Type a prompt you'd give an AI to build something. I'll score it from 1 to 10 and tell you how to make it better.",
+      };
+      return greetings[tool] || greetings.codeHelper;
+    }
+
+    // Very short inputs that aren't greetings: ask for more context.
+    if (trimmed.length > 0 && trimmed.length < 6) {
+      return "Could you tell me a bit more? Try asking a fuller question, like 'why isn't my button working?' or 'how do I centre an element?'.";
+    }
+
     if (tool === 'codeHelper') {
       const idx = Math.floor(Math.random() * responses.length);
       return responses[idx];
