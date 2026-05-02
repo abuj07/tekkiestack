@@ -568,14 +568,23 @@ const TSAGames = (() => {
     }
 
     function onTap() {
+      // Idle (before round 1 OR between rounds) — kick off the next round.
+      // Clear any pending auto-advance timer so we don't double-trigger.
+      if (!waiting && !ready) {
+        if (_state.timer) { clearTimeout(_state.timer); _state.timer = null; }
+        nextRound();
+        return;
+      }
       if (waiting) {
         // Too early
         clearTimeout(_state.timer);
+        _state.timer = null;
         fails++;
+        waiting = false;
         render('Too early! Wait for green next time.', '#0F1F3D', '+200ms penalty');
         total += 700; // penalty
         round++;
-        setTimeout(nextRound, 1100);
+        _state.timer = setTimeout(nextRound, 1100);
         return;
       }
       if (ready) {
@@ -584,7 +593,7 @@ const TSAGames = (() => {
         total += dt;
         round++;
         render(`${dt} ms`, '#0F1F3D', dt < 250 ? 'Lightning!' : dt < 400 ? 'Solid.' : 'Keep practising.');
-        setTimeout(nextRound, 1000);
+        _state.timer = setTimeout(nextRound, 1000);
         return;
       }
     }
