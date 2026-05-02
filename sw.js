@@ -1,10 +1,23 @@
 /**
- * TekkieStack 2.0 — Service Worker (v2)
- * Cache-first offline strategy. Cache version bumped on every deploy.
+ * TekkieStack 2.0 — Service Worker (v3)
+ *
+ * NETWORK-FIRST strategy for HTML / JS / CSS:
+ *   - Try network first (with a 4 s timeout)
+ *   - On success, cache the response for offline use
+ *   - On failure (offline or slow), fall back to cache
+ *
+ * This guarantees that returning users on a working connection always
+ * see the LATEST code on next reload, no manual cache wipe required.
+ * Static assets (images, fonts) stay cache-first for speed.
+ *
+ * IndexedDB profile data is completely separate from this cache and is
+ * NEVER touched by service-worker activity.
+ *
  * Author: Aperintel Ltd
  */
 
-const CACHE_VERSION = 'ts-20260502-130151';  // bump this string on every production deploy
+const CACHE_VERSION = 'ts-20260502-131845';  // bump this string on every production deploy
+const NETWORK_TIMEOUT_MS = 4000;
 const SHELL_ASSETS = [
   './',
   './index.html',
@@ -34,7 +47,7 @@ const SHELL_ASSETS = [
 
 // ── Install: pre-cache shell ───────────────────────────────────────────────
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v2…');
+  console.log('[SW] Installing', CACHE_VERSION);
   event.waitUntil(
     caches.open(CACHE_VERSION).then((cache) => {
       return Promise.allSettled(
@@ -48,7 +61,7 @@ self.addEventListener('install', (event) => {
 
 // ── Activate: clean old caches ────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v2…');
+  console.log('[SW] Activating', CACHE_VERSION);
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
@@ -63,7 +76,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ── Fetch: cache-first, fall back to network ──────────────────────────────
+// ── Fetch: network-first for code, cache-first for static assets ──────────
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
@@ -72,23 +85,82 @@ self.addEventListener('fetch', (event) => {
   const isGoogleFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (!isSameOrigin && !isGoogleFont) return;
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_VERSION).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
+  // Code-bearing files: HTML, JS, CSS use network-first so users always get
+  // the latest deployed code when online. Falls back to cache when offline.
+  const isCodeFile =
+    event.request.mode === 'navigate' ||
+    /\.(?:html|js|mjs|css)(?:\?.*)?$/i.test(url.pathname);
+
+  if (isCodeFile) {
+    event.respondWith(_networkFirst(event.request));
+    return;
+  }
+
+  // Everything else (images, fonts, manifest): cache-first for speed.
+  event.respondWith(_cacheFirst(event.request));
+});
+
+// Network-first: try network with timeout, refresh cache on success,
+// fall back to cache on failure or timeout. Always returns a Response.
+function _networkFirst(request) {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const respondFromCache = (label) => {
+      if (resolved) return;
+      caches.match(request).then(cached => {
+        if (resolved) return;
+        if (cached) {
+          resolved = true;
+          resolve(cached);
+        } else if (request.mode === 'navigate') {
+          // Last-resort fallback for navigations
+          caches.match('./index.html').then(idx => {
+            if (resolved) return;
+            resolved = true;
+            resolve(idx || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } }));
+          });
+        } else {
+          resolved = true;
+          resolve(new Response('', { status: 503 }));
         }
       });
-    })
-  );
-});
+    };
+
+    // Timeout: if network is slow, serve cached response
+    const timer = setTimeout(() => respondFromCache('timeout'), NETWORK_TIMEOUT_MS);
+
+    fetch(request).then(response => {
+      clearTimeout(timer);
+      if (resolved) return;
+      if (response && response.status === 200) {
+        // Update cache for offline use
+        const clone = response.clone();
+        caches.open(CACHE_VERSION).then(cache => cache.put(request, clone)).catch(() => {});
+        resolved = true;
+        resolve(response);
+      } else {
+        respondFromCache('non-200');
+      }
+    }).catch(() => {
+      clearTimeout(timer);
+      respondFromCache('error');
+    });
+  });
+}
+
+// Cache-first: return cached response immediately, fetch + cache in background.
+function _cacheFirst(request) {
+  return caches.match(request).then(cached => {
+    if (cached) return cached;
+    return fetch(request).then(response => {
+      if (response && response.status === 200) {
+        const clone = response.clone();
+        caches.open(CACHE_VERSION).then(cache => cache.put(request, clone)).catch(() => {});
+      }
+      return response;
+    }).catch(() => new Response('', { status: 503 }));
+  });
+}
 
 // ── Message: force update ─────────────────────────────────────────────────
 self.addEventListener('message', (event) => {
