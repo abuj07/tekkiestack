@@ -1,0 +1,140 @@
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TekkieStack logo">
+  <defs>
+    <!-- BOTTOM CUBE — Cyan (foundation) -->
+    <linearGradient id="lkCyFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22EAD0"/>
+      <stop offset="55%" stop-color="#00C9B1"/>
+      <stop offset="100%" stop-color="#00786B"/>
+    </linearGradient>
+    <linearGradient id="lkCyTop" x1="0" y1="0" x2="0.45" y2="1">
+      <stop offset="0%" stop-color="#C7F8EE"/>
+      <stop offset="100%" stop-color="#00C9B1"/>
+    </linearGradient>
+    <linearGradient id="lkCySide" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0%" stop-color="#00786B"/>
+      <stop offset="100%" stop-color="#00382F"/>
+    </linearGradient>
+
+    <!-- MIDDLE CUBE — Amber (growth) -->
+    <linearGradient id="lkAmFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD17A"/>
+      <stop offset="55%" stop-color="#FF9500"/>
+      <stop offset="100%" stop-color="#A05400"/>
+    </linearGradient>
+    <linearGradient id="lkAmTop" x1="0" y1="0" x2="0.45" y2="1">
+      <stop offset="0%" stop-color="#FFF0CD"/>
+      <stop offset="100%" stop-color="#FFB347"/>
+    </linearGradient>
+    <linearGradient id="lkAmSide" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0%" stop-color="#A05400"/>
+      <stop offset="100%" stop-color="#5C2F00"/>
+    </linearGradient>
+
+    <!-- TOP CUBE — Coral (achievement) -->
+    <linearGradient id="lkCoFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFB3B3"/>
+      <stop offset="55%" stop-color="#FF6B6B"/>
+      <stop offset="100%" stop-color="#9B2A2A"/>
+    </linearGradient>
+    <linearGradient id="lkCoTop" x1="0" y1="0" x2="0.45" y2="1">
+      <stop offset="0%" stop-color="#FFE0E0"/>
+      <stop offset="100%" stop-color="#FF8A8A"/>
+    </linearGradient>
+    <linearGradient id="lkCoSide" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0%" stop-color="#9B2A2A"/>
+      <stop offset="100%" stop-color="#5C1414"/>
+    </linearGradient>
+
+    <!-- Star burst gradient -->
+    <radialGradient id="lkSparkHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="35%" stop-color="#FFE74C" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#FF9500" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="lkSparkBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF7B0"/>
+      <stop offset="55%" stop-color="#FFE74C"/>
+      <stop offset="100%" stop-color="#FF9500"/>
+    </linearGradient>
+
+    <!-- Background ambient glow -->
+    <radialGradient id="lkBgGlow" cx="50%" cy="55%" r="55%">
+      <stop offset="0%"  stop-color="#00C9B1" stop-opacity="0.30"/>
+      <stop offset="55%" stop-color="#6C63FF" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#0F1F3D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient glow -->
+  <circle cx="110" cy="118" r="100" fill="url(#lkBgGlow)"/>
+
+  <!-- Ground shadow -->
+  <ellipse cx="110" cy="200" rx="62" ry="6" fill="#0F1F3D" opacity="0.32"/>
+
+  <!--
+    Cube geometry: front face 70x50, isometric depth offset (18,-18).
+    Each cube draws 3 faces: TOP, FRONT, RIGHT — back-to-front so overlaps look right.
+  -->
+
+  <!-- BOTTOM CUBE (cyan) — front-top-left at (65, 142) -->
+  <g>
+    <polygon points="65,142 83,124 153,124 135,142" fill="url(#lkCyTop)"
+             stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <rect x="65" y="142" width="70" height="50" fill="url(#lkCyFront)"
+          stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="135,142 153,124 153,174 135,192" fill="url(#lkCySide)"
+             stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Top edge sheen -->
+    <line x1="68" y1="145" x2="132" y2="145" stroke="#FFFFFF" stroke-width="1.2" opacity="0.40"/>
+    <!-- Front face stylised "<" bracket -->
+    <polyline points="83,160 76,167 83,174" stroke="#FFFFFF" stroke-width="3.2"
+              fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+  </g>
+
+  <!-- MIDDLE CUBE (amber) — front-top-left at (61, 92), nudged left for "wobble" -->
+  <g>
+    <polygon points="61,92 79,74 149,74 131,92" fill="url(#lkAmTop)"
+             stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <rect x="61" y="92" width="70" height="50" fill="url(#lkAmFront)"
+          stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="131,92 149,74 149,124 131,142" fill="url(#lkAmSide)"
+             stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <line x1="64" y1="95" x2="128" y2="95" stroke="#FFFFFF" stroke-width="1.2" opacity="0.50"/>
+    <!-- Front face stylised "/" -->
+    <line x1="91" y1="124" x2="101" y2="110" stroke="#FFFFFF" stroke-width="3.2"
+          stroke-linecap="round" opacity="0.92"/>
+  </g>
+
+  <!-- TOP CUBE (coral) — front-top-left at (69, 42), nudged right for "wobble" -->
+  <g>
+    <polygon points="69,42 87,24 157,24 139,42" fill="url(#lkCoTop)"
+             stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <rect x="69" y="42" width="70" height="50" fill="url(#lkCoFront)"
+          stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="139,42 157,24 157,74 139,92" fill="url(#lkCoSide)"
+             stroke="#0F1F3D" stroke-width="2.5" stroke-linejoin="round"/>
+    <line x1="72" y1="45" x2="136" y2="45" stroke="#FFFFFF" stroke-width="1.2" opacity="0.55"/>
+    <!-- Front face stylised ">" bracket — completes the </> across the stack -->
+    <polyline points="117,60 124,67 117,74" stroke="#FFFFFF" stroke-width="3.2"
+              fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+  </g>
+
+  <!-- SPARK STAR atop the stack — the achievement spark -->
+  <g transform="translate(170, 32)">
+    <circle r="22" fill="url(#lkSparkHalo)"/>
+    <!-- 8-point star -->
+    <path d="M 0 -14 L 3 -3 L 14 0 L 3 3 L 0 14 L -3 3 L -14 0 L -3 -3 Z"
+          fill="url(#lkSparkBody)" stroke="#FF9500" stroke-width="1.6" stroke-linejoin="round"/>
+    <!-- Diagonal ray cross -->
+    <path d="M -10 -10 L -2 -2 M 10 10 L 2 2 M 10 -10 L 2 -2 M -10 10 L -2 2"
+          stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+    <circle r="2.6" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Tiny ambient sparkles for character -->
+  <circle cx="40"  cy="60"  r="2.2" fill="#FFFFFF" opacity="0.85"/>
+  <circle cx="38"  cy="130" r="1.4" fill="#FFFFFF" opacity="0.55"/>
+  <circle cx="190" cy="110" r="1.6" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="200" cy="160" r="1.2" fill="#FFE74C" opacity="0.75"/>
+  <circle cx="20"  cy="100" r="1.1" fill="#80E8DE" opacity="0.7"/>
+</svg>
