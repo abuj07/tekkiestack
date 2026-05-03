@@ -16,7 +16,7 @@
  * Author: Aperintel Ltd
  */
 
-const CACHE_VERSION = 'ts-20260503-034210';  // bump this string on every production deploy
+const CACHE_VERSION = 'ts-20260503-035451';  // bump this string on every production deploy
 const NETWORK_TIMEOUT_MS = 4000;
 const SHELL_ASSETS = [
   './',
